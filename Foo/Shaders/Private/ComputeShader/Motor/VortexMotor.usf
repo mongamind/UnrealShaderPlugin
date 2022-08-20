@@ -1,0 +1,85 @@
+// Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
+
+/*=============================================================================
+    LensDistortionUVGeneration.usf: Generate lens distortion and undistortion
+    UV displacement map into a render target.
+
+    The pixel shader directly compute the distort viewport UV to undistort
+    viewport UV displacement using Sv_Position and the reference equations and
+    store them into the red and green channels.
+
+    However to avoid resolving with a ferrari method, or doing a newton method
+    on the GPU to compute the undistort viewport UV to distort viewport UV
+    displacement, this couple of shaders works as follow: The vertex shader
+    undistort the grid's vertices, and pass down to the pixel shader the viewport
+    UV of where they should have been on screen without undistortion. The pixel
+    shader can then generate the undistort viewport UV to distort viewport UV
+    displacement by just subtracting the pixel's viewport UV.
+=============================================================================*/
+
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/Common.ush"
+
+#define XAxisTexel 32
+#define YAxisTexel 16
+#define ZAxisTexel 32
+#define TexelsPerMeter 1
+
+#define MotorDataMaxCount 64
+
+SamplerState InXAxisTextureSampler;
+Texture3D<float> InXAxisTexture;  //texture for special dimension (x or y or z)
+SamplerState InYAxisTextureSampler;
+Texture3D<float> InYAxisTexture;  //texture for special dimension (x or y or z)
+SamplerState InZAxisTextureSampler;
+Texture3D<float> InZAxisTexture;  //texture for special dimension (x or y or z)
+
+float3 InPlayerWorldSpacePos;
+
+struct FMotorData
+{
+    float3 MotorWorldSpacePos;
+    float3 WindVelocity;
+    float radius;
+};
+FMotorData InMotorDatas[MotorDataMaxCount];
+
+
+RWTexture3D<float> OutXAxisTexture;
+RWTexture3D<float> OutYAxisTexture;
+RWTexture3D<float> OutZAxisTexture;
+
+
+[numthreads(32,32,1)]
+void MainCS(uint3 ThreadId : SV_DispatchThreadID)
+{
+    float SizeX,SizeY,SizeZ;
+    OutTexture.GetDimensions(SizeX,SizeY,SizeZ);
+    
+    float3 Resolution = float3(SizeX,SizeY,SizeZ);
+    float3 uvTexelSize = 1 / Resolution;
+    
+    float PosPlayerInTexel = float3(SizeX * 0.5f,SizeY * 0.5f,SizeZ * 0.5f);
+
+    for(int y = 0; y < YAxisTexel;++y)
+    {
+        float3 PosInTexel = float3(ThreadId.x,y,ThreadId.z);
+        float3 uv = float3(ThreadId.x,ThreadId.z,y) * uvTexelSize;
+
+        float3 PosInWorld = (PosInTexel - PosPlayerInTexel) / TexelsPerMeter + InPlayerWorldSpacePos;
+
+        for(int i = 0;i < MotorDataMaxCount;++i)
+        {
+            FMotorData& MotorData = InMotorDatas[i];
+            float3 PosMotor = MotorData.MotorWorldSpacePos;
+            float3 WindVelocity = MotorData.WindVelocity;
+            
+            if(length( PosMotor - PosInWorld) < MotorData.radius)
+            {
+                OutXAxisTexture[uv] = InXAxisTexture[uv] + WindVelocity.x;
+                OutYAxisTexture[uv] = InYAxisTexture[uv] + WindVelocity.y;
+                OutZAxisTexture[uv] = InZAxisTexture[uv] + WindVelocity.z;
+            }
+        }
+    }
+}
