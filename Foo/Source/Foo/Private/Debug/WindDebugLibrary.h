@@ -16,6 +16,7 @@ class UWindDebugLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 	
 public:
+	// UFUNCTION(BlueprintCallable, Category = "Wind Simulate | Debug", meta = (WorldContext = "WorldContextObject"))
 	static void DrawWindTextureToRT(
 				const UObject* WorldContextObject,
 				float Padding,
