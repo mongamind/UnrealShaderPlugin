@@ -9,6 +9,7 @@
 // IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FDirectionalWindMotorData, "InMotorDatas");
 
 
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FMotorUniformData, "MotorData");
 
 FWindDirectionalMotorShader::FWindDirectionalMotorShader(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
 	: FGlobalShader(Initializer)
@@ -17,10 +18,10 @@ FWindDirectionalMotorShader::FWindDirectionalMotorShader(const ShaderMetaType::C
 	InYAxisTexture.Bind(Initializer.ParameterMap,TEXT("InYAxisTexture"));
 	InZAxisTexture.Bind(Initializer.ParameterMap,TEXT("InZAxisTexture"));
 
-	InPlayerWorldSpacePos.Bind(Initializer.ParameterMap,TEXT("InPlayerWorldSpacePos"));
-	MotorWorldSpacePos.Bind(Initializer.ParameterMap,TEXT("MotorWorldSpacePos"));
-	MotorWindVelocity.Bind(Initializer.ParameterMap,TEXT("MotorWindVelocity"));
-	MotorRadius.Bind(Initializer.ParameterMap,TEXT("MotorRadius"));
+	// InPlayerWorldSpacePos.Bind(Initializer.ParameterMap,TEXT("InPlayerWorldSpacePos"));
+	// MotorWorldSpacePos.Bind(Initializer.ParameterMap,TEXT("MotorWorldSpacePos"));
+	// MotorWindVelocity.Bind(Initializer.ParameterMap,TEXT("MotorWindVelocity"));
+	// MotorRadius.Bind(Initializer.ParameterMap,TEXT("MotorRadius"));
 
 	OutXAxisTexture.Bind(Initializer.ParameterMap,TEXT("OutXAxisTexture"));
 	OutYAxisTexture.Bind(Initializer.ParameterMap,TEXT("OutYAxisTexture"));
@@ -35,6 +36,9 @@ void FWindDirectionalMotorShader::ModifyCompilationEnvironment(const FGlobalShad
 
 void FWindDirectionalMotorShader::SetParameters(
 	FRHICommandListImmediate& RHICmdList,
+	FVector PlayerWorldPos,
+	float MaxVelocity,
+	float TexelsPermeter,
 	const TArray<FDirectionalWindMotorParam>& AllWindMotors,
 	FUnorderedAccessViewRHIRef WindDiffusionXAxisTexture_UAV,
 	FShaderResourceViewRHIRef WindDiffusionXAxisTexture_SRV,
@@ -58,23 +62,31 @@ void FWindDirectionalMotorShader::SetParameters(
 		// MotorPosArray.Empty(64);
 		// MotorWindVelocityArray.Empty(64);
 		// MotorRadiusArray.Empty(64);
+		FMotorUniformData UniformData;
 		for (int index = 0;index < AllWindMotors.Num();index ++)
 		{
 			const FDirectionalWindMotorParam& MotorParam = AllWindMotors[index];
-			MotorPosArray.Add(MotorParam.MotorWorldSpacePos);
-			MotorWindVelocityArray.Add(MotorParam.WindVelocity);
-			MotorRadiusArray.Add(MotorParam.Radius);
+			UniformData.MotorWorldSpacePos[index] = MotorParam.MotorWorldSpacePos;
+			UniformData.MotorWindVelocity[index] = MotorParam.WindVelocity;
+			UniformData.MotorRadius[index] = MotorParam.Radius;
 		}
-		SetShaderValue(RHICmdList,ComputeShaderRHI,NumMotors,AllWindMotors.Num());
-		SetShaderValueArray(RHICmdList,ComputeShaderRHI,MotorWorldSpacePos,MotorPosArray.GetData(),AllWindMotors.Num());
-		SetShaderValueArray(RHICmdList,ComputeShaderRHI,MotorWindVelocity,MotorWindVelocityArray.GetData(),AllWindMotors.Num());
-		SetShaderValueArray(RHICmdList,ComputeShaderRHI,MotorRadius,MotorRadiusArray.GetData(),AllWindMotors.Num());
+		
+		UniformData.NumMotors = AllWindMotors.Num();
+		UniformData.MaxVelocity = MaxVelocity;
+		UniformData.InPlayerWorldSpacePos = PlayerWorldPos;
+		SetUniformBufferParameterImmediate(RHICmdList,ComputeShaderRHI,GetUniformBufferParameter<FMotorUniformData>(), UniformData);
+		
+		// SetShaderValue(RHICmdList,ComputeShaderRHI,NumMotors,AllWindMotors.Num());
+		// SetShaderValue(RHICmdList,ComputeShaderRHI,InPlayerWorldSpacePos,PlayerWorldPos);
+		// SetShaderValueArray(RHICmdList,ComputeShaderRHI,MotorWorldSpacePos,MotorPosArray.GetData(),AllWindMotors.Num());
+		// SetShaderValueArray(RHICmdList,ComputeShaderRHI,MotorWindVelocity,MotorWindVelocityArray.GetData(),AllWindMotors.Num());
+		// SetShaderValueArray(RHICmdList,ComputeShaderRHI,MotorRadius,MotorRadiusArray.GetData(),AllWindMotors.Num());
 		
 
 		SetUAVParameter(RHICmdList,ComputeShaderRHI,OutXAxisTexture,WindDiffusionXAxisTexture_UAV);
 		SetUAVParameter(RHICmdList,ComputeShaderRHI,OutYAxisTexture,WindDiffusionYAxisTexture_UAV);
 		SetUAVParameter(RHICmdList,ComputeShaderRHI,OutZAxisTexture,WindDiffusionZAxisTexture_UAV);
-		
+
 	}
 }
 
@@ -84,8 +96,8 @@ void FWindDirectionalMotorShader::UnbindBuffers(FRHICommandListImmediate& RHICmd
 	if(OutXAxisTexture.IsBound())
 	{
 		SetUAVParameter(RHICmdList,ComputeShaderRHI,OutXAxisTexture,nullptr);
-		SetSRVParameter(RHICmdList,ComputeShaderRHI,OutYAxisTexture,nullptr);
-		SetSRVParameter(RHICmdList,ComputeShaderRHI,OutZAxisTexture,nullptr);
+		SetUAVParameter(RHICmdList,ComputeShaderRHI,OutYAxisTexture,nullptr);
+		SetUAVParameter(RHICmdList,ComputeShaderRHI,OutZAxisTexture,nullptr);
 	}
 }
 

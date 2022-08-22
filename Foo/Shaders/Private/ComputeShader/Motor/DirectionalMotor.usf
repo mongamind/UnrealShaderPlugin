@@ -23,7 +23,6 @@
 #define XAxisTexel 32
 #define YAxisTexel 16
 #define ZAxisTexel 32
-#define TexelsPerMeter 1
 
 #define MotorDataMaxCount 64
 
@@ -31,23 +30,40 @@ Texture3D<float> InXAxisTexture;  //texture for special dimension (x or y or z)
 Texture3D<float> InYAxisTexture;  //texture for special dimension (x or y or z)
 Texture3D<float> InZAxisTexture;  //texture for special dimension (x or y or z)
 
-float3 InPlayerWorldSpacePos;
+// float3 InPlayerWorldSpacePos;
 
-uint NumMotors;
-float3 MotorWorldSpacePos[MotorDataMaxCount];
-float3 MotorWindVelocity[MotorDataMaxCount];
-float MotorRadius[MotorDataMaxCount];
+// uint NumMotors;
+// float3 MotorWorldSpacePos[MotorDataMaxCount];
+// float3 MotorWindVelocity[MotorDataMaxCount];
+
+// FMotorUniformData
+// {
+//     uint NumMotors;
+//      float MaxVelocity;
+//      float TexelsPerMeter;
+//     float3 InPlayerWorldSpacePos;
+//     float MotorRadius[MotorDataMaxCount];
+//     float3 MotorWorldSpacePos[MotorDataMaxCount];
+//     float3 MotorWindVelocity[MotorDataMaxCount];
+// }
+// FMotorUniformData MotorData;
 
 
 RWTexture3D<float> OutXAxisTexture;
 RWTexture3D<float> OutYAxisTexture;
 RWTexture3D<float> OutZAxisTexture;
 
+float LimitInMaxVelocity(float Velocity)
+{
+    return max(min(Velocity,MotorData.MaxVelocity),-MotorData.MaxVelocity);
+}
+
+
 void ModifyVelocityInTexture(uint3 GridPos,float3 WindVelocity)
 {
-    OutXAxisTexture[GridPos.xzy] = InXAxisTexture[GridPos.xzy] + WindVelocity.x;
-    OutYAxisTexture[GridPos.xzy] = InYAxisTexture[GridPos.xzy] + WindVelocity.y;
-    OutZAxisTexture[GridPos.xzy] = InZAxisTexture[GridPos.xzy] + WindVelocity.z;
+    OutXAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(WindVelocity.x);//InXAxisTexture[GridPos.xzy] + WindVelocity.x;
+    OutYAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(WindVelocity.y);//InYAxisTexture[GridPos.xzy] + WindVelocity.y;
+    OutZAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(WindVelocity.z);//InZAxisTexture[GridPos.xzy] + WindVelocity.z;
 }
 
 [numthreads(32,32,1)]
@@ -59,19 +75,20 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
     for(int y = 0; y < YAxisTexel;++y)
     {
         uint3 GridPos = uint3(ThreadId.x,y,ThreadId.y);
-
-        for(int i = 0;i < MotorDataMaxCount;++i)
+        for(int i = 0;i < MotorData.NumMotors;++i)
         {
-            float3 MotorPos = MotorWorldSpacePos[i];
-            float3 Velocity = MotorWindVelocity[i];
-            float Radius = MotorRadius[i];
+            float3 MotorPos = MotorData.MotorWorldSpacePos[i];
+            float3 Velocity = MotorData.MotorWindVelocity[i];
+            float Radius = MotorData.MotorRadius[i];
             
-            float3 GridMotorPos = (MotorPos - InPlayerWorldSpacePos) * TexelsPerMeter + GridPlayerPos;
+            float3 GridMotorPos = (MotorPos - MotorData.InPlayerWorldSpacePos) * MotorData.TexelsPerMeter + GridPlayerPos;
             float3 WindVelocity = Velocity;
-            
-            if(length( GridMotorPos - GridPos) < (Radius * TexelsPerMeter))
+            float3 deltaPos = GridPlayerPos - GridPos;
+            //ModifyVelocityInTexture(GridPos,deltaPos);//float3(deltaPos.x / XAxisTexel,deltaPos.x / XAxisTexel,deltaPos.x / XAxisTexel));
+            if(length( GridMotorPos - GridPos) < Radius * MotorData.TexelsPerMeter)
             {
-                ModifyVelocityInTexture(GridPos,WindVelocity);
+                ModifyVelocityInTexture(GridPos,float3(1,0,0));
+                //ModifyVelocityInTexture(GridPos,WindVelocity);
             }
         }
     }

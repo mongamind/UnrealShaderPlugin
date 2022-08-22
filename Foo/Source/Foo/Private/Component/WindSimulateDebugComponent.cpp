@@ -13,7 +13,6 @@
 #include "Engine/EngineTypes.h"
 #include "Debug/WindDebugLibrary.h"
 #include "Component/WindSimulateManager.h"
-#include "ColorRTShaderBlueprintLibrary.h"
 
 
 // Sets default values for this component's properties
@@ -56,7 +55,7 @@ void UWindSimulateDebugComponent::InitComponent()
 
 				StaticMeshComponent->SetRelativeLocation(FVector(74,0,20));
 				StaticMeshComponent->SetRelativeRotation(FRotator(0,90,90));
-				StaticMeshComponent->SetRelativeScale3D(FVector(1,0.1,1));
+				StaticMeshComponent->SetRelativeScale3D(FVector(1,0.055,1));
 
 
 				UStaticMeshComponent* StaticMeshComponentTemp = StaticMeshComponent;
@@ -92,8 +91,9 @@ void UWindSimulateDebugComponent::TickComponent(float DeltaTime, ELevelTick Tick
 		UWindSimulateManager* WindMgr = UWindSimulateManager::GetInstance(GetWorld());
 		if(WindMgr)
 		{
-			WindMgr->WindVelocityTextureBuffer.SwapBuffer();
-			UWindDebugLibrary::DrawWindTextureToRT(GetWorld(),Padding,&WindMgr->WindVelocityTextureBuffer,SampleRenderTargetObj);
+			// WindMgr->WindVelocityTextureBuffer.SwapBuffer();
+			float MaxWindVelocity = WindMgr->GetMaxWindVelocity();
+			UWindDebugLibrary::DrawWindTextureToRT(GetWorld(),Padding,MaxWindVelocity,&WindMgr->WindVelocityTextureBuffer,SampleRenderTargetObj);
 			// UColorRTShaderBlueprintLibrary::DrawSimpleColorToRenderTarget(GetWorld(),SampleRenderTargetObj,FLinearColor(1,0,0,1));
 		}
 		

@@ -32,6 +32,8 @@ public:
 	void SetPlayerHoldComponent(class UWindCenterHoldComponent* InPlayerHoldComponent);
 	void UnsetPlayerHoldComponent(class UWindCenterHoldComponent* InPlayerHoldComponent);
 
+	float GetMaxWindVelocity();
+
 protected:
 	virtual void Tick( float DeltaTime ) override;
 	virtual TStatId GetStatId() const override;
@@ -52,5 +54,8 @@ private:
 	FWindVelocityFieldDataParam WindFieldData;
 	FWindMotorParamData WindMotorData;
 
-	FWindVelocityTexturesDoubleBuffer WindVelocityTextureBuffer;
+	FWindVelocityTextures WindVelocityTextureBuffer;
+
+
+	int RunCount = 0;
 };

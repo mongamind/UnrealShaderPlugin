@@ -12,8 +12,7 @@ struct FWindSetting
 {
 	FVector InPosDelta;
 	
-	float InMaxWindVelocity;                   //Max of wind velocity.
-	
+	float MaxWindVelocity;                   //Max of wind velocity.
 	float OriginalAlpha = 0.9f;
 	float BetaNearAdd = 0.14f;
 };
@@ -26,21 +25,43 @@ public:
 
 	void Release();
 
-	void ClearUAVToBlack(FRHICommandList& RHICmdList) const;
+	
 
-	void Barrier(FRHICommandList& RHICmdList, EResourceTransitionAccess InBarrierMode, EResourceTransitionPipeline InPipeline) const;
+	void Barrier(FRHICommandList& RHICmdList, EResourceTransitionAccess InBarrierMode, EResourceTransitionPipeline InPipeline,FRHIComputeFence* Fence) const;
 
-	FTexture3DRHIRef WindDiffusionXAxisTexture;
-	FUnorderedAccessViewRHIRef WindDiffusionXAxisTexture_UAV;
-	FShaderResourceViewRHIRef WindDiffusionXAxisTexture_SRV;
+	void ClearCurXAxisUAVToBlack(FRHICommandList& RHICmdList) const;
+	void ClearCurYAxisUAVToBlack(FRHICommandList& RHICmdList) const;
+	void ClearCurZAxisUAVToBlack(FRHICommandList& RHICmdList) const;
 
-	FTexture3DRHIRef WindDiffusionYAxisTexture;
-	FUnorderedAccessViewRHIRef WindDiffusionYAxisTexture_UAV;
-	FShaderResourceViewRHIRef WindDiffusionYAxisTexture_SRV;
+	void SwapXAxisBuff(){IndexCurXAxisTexture = (IndexCurXAxisTexture + 1) % 2;}
+	void SwapYAxisBuff(){IndexCurYAxisTexture = (IndexCurYAxisTexture + 1) % 2;}
+	void SwapZAxisBuff(){IndexCurZAxisTexture = (IndexCurZAxisTexture + 1) % 2;}
 
-	FTexture3DRHIRef WindDiffusionZAxisTexture;
-	FUnorderedAccessViewRHIRef WindDiffusionZAxisTexture_UAV;
-	FShaderResourceViewRHIRef WindDiffusionZAxisTexture_SRV;
+	FUnorderedAccessViewRHIRef GetCurXAxisUAV()const {return WindDiffusionXAxisTexture_UAV[IndexCurXAxisTexture];}
+	FShaderResourceViewRHIRef GetCurXAxisSRV()const {return WindDiffusionXAxisTexture_SRV[(IndexCurXAxisTexture + 1) % 2];}
+
+	FUnorderedAccessViewRHIRef GetCurYAxisUAV()const {return WindDiffusionYAxisTexture_UAV[IndexCurYAxisTexture];}
+	FShaderResourceViewRHIRef GetCurYAxisSRV()const {return WindDiffusionYAxisTexture_SRV[(IndexCurYAxisTexture + 1) % 2];}
+
+	FUnorderedAccessViewRHIRef GetCurZAxisUAV()const {return WindDiffusionZAxisTexture_UAV[IndexCurZAxisTexture];}
+	FShaderResourceViewRHIRef GetCurZAxisSRV()const {return WindDiffusionZAxisTexture_SRV[(IndexCurZAxisTexture + 1) % 2];}
+
+	FTexture3DRHIRef WindDiffusionXAxisTexture[2];
+	FUnorderedAccessViewRHIRef WindDiffusionXAxisTexture_UAV[2];
+	FShaderResourceViewRHIRef WindDiffusionXAxisTexture_SRV[2];
+	int IndexCurXAxisTexture = 0;
+
+
+	FTexture3DRHIRef WindDiffusionYAxisTexture[2];
+	FUnorderedAccessViewRHIRef WindDiffusionYAxisTexture_UAV[2];
+	FShaderResourceViewRHIRef WindDiffusionYAxisTexture_SRV[2];
+	int IndexCurYAxisTexture = 0;
+
+
+	FTexture3DRHIRef WindDiffusionZAxisTexture[2];
+	FUnorderedAccessViewRHIRef WindDiffusionZAxisTexture_UAV[2];
+	FShaderResourceViewRHIRef WindDiffusionZAxisTexture_SRV[2];
+	int IndexCurZAxisTexture = 0;
 
 	uint32 SizeX;
 	uint32 SizeY;
@@ -48,37 +69,37 @@ public:
 
 };
 
-struct FWindVelocityTexturesDoubleBuffer
-{
-	//double buffer.
-	FWindVelocityTextures VelocityTextures[2];
-	int IndexCurVelocityTexture = 0;
-
-	void InitVelocityTextures();
-	void ReleaseVelocityTextures();
-
-	void SwapBuffer()
-	{
-		IndexCurVelocityTexture = (IndexCurVelocityTexture + 1) % 2;
-	}
-
-	const FWindVelocityTextures& GetCurVelocityTextures()const 
-	{
-		return VelocityTextures[IndexCurVelocityTexture];
-	}
-
-	const FWindVelocityTextures& GetLastVelocityTextures()const 
-	{
-		return VelocityTextures[(IndexCurVelocityTexture + 1) % 2];
-	}
-};
+// struct FWindVelocityTexturesDoubleBuffer
+// {
+// 	//double buffer.
+// 	FWindVelocityTextures VelocityTextures[2];
+// 	int IndexCurVelocityTexture = 0;
+//
+// 	void InitVelocityTextures();
+// 	void ReleaseVelocityTextures();
+//
+// 	void SwapBuffer()
+// 	{
+// 		IndexCurVelocityTexture = (IndexCurVelocityTexture + 1) % 2;
+// 	}
+//
+// 	const FWindVelocityTextures& GetCurVelocityTextures()const 
+// 	{
+// 		return VelocityTextures[IndexCurVelocityTexture];
+// 	}
+//
+// 	const FWindVelocityTextures& GetLastVelocityTextures()const 
+// 	{
+// 		return VelocityTextures[(IndexCurVelocityTexture + 1) % 2];
+// 	}
+// };
 
 struct FWindVelocityFieldDataParam
 {
 	FWindSetting WindSetting;
 
 	//double buffer.
-	FWindVelocityTexturesDoubleBuffer* WindVelocityTexturesDoubleBuffer;
+	FWindVelocityTextures* WindVelocityTexturesDoubleBuffer;
 };
 
 BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FWindVelocityFieldData, )
@@ -152,10 +173,19 @@ public:
 		FUnorderedAccessViewRHIRef WindDiffusionOneAxisTexture_UAV,
 		FRHIComputeFence* Fence);
 
+	void UnsetParameters(
+		FRHICommandList& RHICmdList,
+		EResourceTransitionAccess TransitionAccess,
+		EResourceTransitionPipeline TransitionPipeline,
+		FUnorderedAccessViewRHIRef WindDiffusionXAxisTexture_UAV,
+		FUnorderedAccessViewRHIRef WindDiffusionYAxisTexture_UAV,
+		FUnorderedAccessViewRHIRef WindDiffusionZAxisTexture_UAV,
+		FRHIComputeFence* Fence);
+
 	void UnbindBuffers(FRHICommandListImmediate& RHICmdList);
 
 private:
-	LAYOUT_FIELD(FShaderResourceParameter, InTexture);
 	
+	LAYOUT_FIELD(FShaderResourceParameter, InTexture);
 	LAYOUT_FIELD(FShaderResourceParameter,OutTexture);
 };

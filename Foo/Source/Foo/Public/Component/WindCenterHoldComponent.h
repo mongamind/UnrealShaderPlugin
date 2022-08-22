@@ -21,7 +21,10 @@ public:
 	static class UWindCenterHoldComponent* s_Instance;
 	static class UWindCenterHoldComponent* GetInstance();
 
-	void GetWindSettingParam(FWindSetting& WindSetting); 
+	void GetWindSettingParam(FWindSetting& WindSetting);
+
+	float GeMaxWindVelocity(){return MaxWindVelocity;}
+	float GetTexelsPerMeter(){return TexelsPerMeter;}
 
 protected:
 	// Called when the game starts
@@ -29,12 +32,13 @@ protected:
 	virtual void BeginDestroy() override;
 
 private:
-
-	UPROPERTY(EditDefaultsOnly,Category="Wind Simulate")
-	float InMaxWindVelocity = 100;                   //Max of wind velocity.
-	UPROPERTY(EditDefaultsOnly,Category="Wind Simulate")
+	UPROPERTY(EditAnywhere,Category="Wind Simulate")
+	float TexelsPerMeter = 0.01;             
+	UPROPERTY(EditAnywhere,Category="Wind Simulate")
+	float MaxWindVelocity = 100;                   //Max of wind velocity.
+	UPROPERTY(EditAnywhere,Category="Wind Simulate")
 	float OriginalAlpha = 0.9f;
-	UPROPERTY(EditDefaultsOnly,Category="Wind Simulate")
+	UPROPERTY(EditAnywhere,Category="Wind Simulate")
 	float BetaNearAdd = 0.14f;
 
 	bool bIsFirstRecord = true;

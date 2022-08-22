@@ -15,6 +15,7 @@ void UWindDebugLibrary::DrawWindTextureToRT_RenderThread(
 		ERHIFeatureLevel::Type FeatureLevel,
 		FTextureRenderTargetResource* OutTextureRenderTargetResource,
 		float Padding,
+		float MaxWindVelocity,
 		FShaderResourceViewRHIRef TextureXAxisRHI,
 		FShaderResourceViewRHIRef TextureYAxisRHI,
 		FShaderResourceViewRHIRef TextureZAxisRHI)
@@ -53,8 +54,8 @@ void UWindDebugLibrary::DrawWindTextureToRT_RenderThread(
 			OutTextureRenderTargetResource->GetSizeX(), OutTextureRenderTargetResource->GetSizeY(), 1.f);
 
 		// Update shader uniform parameters.
-		VertexShader->SetParameters(RHICmdList, Padding, TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI);
-		PixelShader->SetParameters(RHICmdList, Padding, TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI);
+		VertexShader->SetParameters(RHICmdList,VertexShader.GetVertexShader(), Padding,MaxWindVelocity, TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI);
+		PixelShader->SetParameters(RHICmdList,PixelShader.GetPixelShader(), Padding,MaxWindVelocity, TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI);
 
 		// Draw grid.
 		RHICmdList.SetStreamSource(0,g_WindDebugVertexBuffer.VertexBufferRHI,0);
@@ -67,7 +68,8 @@ void UWindDebugLibrary::DrawWindTextureToRT_RenderThread(
 void UWindDebugLibrary::DrawWindTextureToRT(
 	const UObject* WorldContextObject,
 	float Padding,
-	FWindVelocityTexturesDoubleBuffer* WindTextureBuffers,
+	float MaxWindVelocity,
+	FWindVelocityTextures* WindTextureBuffers,
 	class UTextureRenderTarget2D* OutputRenderTarget)
 {
 	
@@ -81,13 +83,13 @@ void UWindDebugLibrary::DrawWindTextureToRT(
 	FName TextureRenderTargetName = OutputRenderTarget->GetFName();
 	FTextureRenderTargetResource* TextureRenderTargetReource  = OutputRenderTarget->GameThread_GetRenderTargetResource();
 	
-	FShaderResourceViewRHIRef TextureXAxisRHI = WindTextureBuffers->GetCurVelocityTextures().WindDiffusionXAxisTexture_SRV;
-	FShaderResourceViewRHIRef TextureYAxisRHI = WindTextureBuffers->GetCurVelocityTextures().WindDiffusionYAxisTexture_SRV;
-	FShaderResourceViewRHIRef TextureZAxisRHI = WindTextureBuffers->GetCurVelocityTextures().WindDiffusionZAxisTexture_SRV;
+	FShaderResourceViewRHIRef TextureXAxisRHI = WindTextureBuffers->GetCurXAxisSRV();
+	FShaderResourceViewRHIRef TextureYAxisRHI = WindTextureBuffers->GetCurYAxisSRV();
+	FShaderResourceViewRHIRef TextureZAxisRHI = WindTextureBuffers->GetCurZAxisSRV();
 	ENQUEUE_RENDER_COMMAND(CaptureCommand)(
-		[TextureRenderTargetReource,FeatureLevel,Padding,TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI](FRHICommandListImmediate& RHICmdList)
+		[TextureRenderTargetReource,FeatureLevel,Padding,MaxWindVelocity,TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI](FRHICommandListImmediate& RHICmdList)
 		{
-			DrawWindTextureToRT_RenderThread(RHICmdList,FeatureLevel,TextureRenderTargetReource,Padding,TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI);
+			DrawWindTextureToRT_RenderThread(RHICmdList,FeatureLevel,TextureRenderTargetReource,Padding,MaxWindVelocity,TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI);
 		}
 	);
 }

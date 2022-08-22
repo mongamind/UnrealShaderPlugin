@@ -26,15 +26,13 @@ public:
 	virtual class FWindMotorBaseParamBase* GetWindMotorParam() {return nullptr;};
 
 
-	UPROPERTY(EditDefaultsOnly,Category="Wind Simulate")
+	UPROPERTY(EditAnywhere,Category="Wind Simulate")
 	float Radius = 1;
 
 	
-	UPROPERTY(EditDefaultsOnly,Category="Wind Simulate")
+	UPROPERTY(EditAnywhere,Category="Wind Simulate")
 	float WindForce = 1;
 
-	UPROPERTY(EditAnywhere,Category="Wind Simulate")
-	float MaxVelocity;						//Max of wind velocity.						//wind drag force
 	
 protected:
 	virtual bool GetWindMotorParamInternal(FWindMotorBaseParamBase* OutMotorParam);

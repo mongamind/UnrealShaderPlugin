@@ -35,8 +35,10 @@ public:
 struct FWindMotorParamData
 {
 	TArray<FWindMotorBaseParamBase*> AllWindMotors;
-
-	FWindVelocityTexturesDoubleBuffer* WindVelocityTexturesDoubleBuffer;
+	FVector PlayerWorldPos;
+	float MaxVelocity;
+	float TexelsPerMeter;
+	FWindVelocityTextures* WindVelocityTexturesDoubleBuffer;
 };
 //
 // BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FDirectionalWindMotorData, )
@@ -44,6 +46,18 @@ struct FWindMotorParamData
 // 	SHADER_PARAMETER(FVector,WindVelocity)
 // 	SHADER_PARAMETER(float,radius)
 // END_GLOBAL_SHADER_PARAMETER_STRUCT()
+
+
+
+BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FMotorUniformData, )
+	SHADER_PARAMETER(uint32,NumMotors)
+	SHADER_PARAMETER(float,MaxVelocity)
+	SHADER_PARAMETER(float,TexelsPerMeter)
+	SHADER_PARAMETER(FVector,InPlayerWorldSpacePos)
+	SHADER_PARAMETER_ARRAY(float,MotorRadius, [64])
+	SHADER_PARAMETER_ARRAY(FVector,MotorWorldSpacePos, [64])
+	SHADER_PARAMETER_ARRAY(FVector,MotorWindVelocity, [64])
+END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
 class FWindDirectionalMotorShader : public FGlobalShader
 {
@@ -63,6 +77,9 @@ public:
 	
 	void SetParameters(
 		FRHICommandListImmediate& RHICmdList,
+		FVector PlayerWorldPos,
+		float MaxVelocity,
+		float TexelsPermeter,
 		const TArray<FDirectionalWindMotorParam>& AllWindMotors,
 		FUnorderedAccessViewRHIRef WindDiffusionXAxisTexture_UAV,
 		FShaderResourceViewRHIRef WindDiffusionXAxisTexture_SRV,
@@ -87,12 +104,11 @@ private:
 	LAYOUT_FIELD(FShaderResourceParameter, InYAxisTexture);
 	LAYOUT_FIELD(FShaderResourceParameter, InZAxisTexture);
 
-	LAYOUT_FIELD(FShaderParameter, InPlayerWorldSpacePos);
-
-	LAYOUT_FIELD(FShaderParameter, NumMotors);
-	LAYOUT_FIELD(FShaderParameter, MotorWorldSpacePos);
-	LAYOUT_FIELD(FShaderParameter, MotorWindVelocity);
-	LAYOUT_FIELD(FShaderParameter, MotorRadius);
+	// LAYOUT_FIELD(FShaderParameter, InPlayerWorldSpacePos);
+	//
+	// LAYOUT_FIELD(FShaderParameter, MotorWorldSpacePos);
+	// LAYOUT_FIELD(FShaderParameter, MotorWindVelocity);
+	// LAYOUT_FIELD(FShaderParameter, MotorRadius);
 	
 	LAYOUT_FIELD(FShaderResourceParameter, OutXAxisTexture);
 	LAYOUT_FIELD(FShaderResourceParameter, OutYAxisTexture);

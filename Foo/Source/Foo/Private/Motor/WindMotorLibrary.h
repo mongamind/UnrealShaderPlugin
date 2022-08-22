@@ -23,8 +23,11 @@ private:
 	static void ApplyWindMotors_RenderThread(
 					FRHICommandListImmediate& RHICmdList,
 					ERHIFeatureLevel::Type FeatureLevel,
+					FVector PlayerWorldPos,
+					float MaxVelocity,
+					float TexelsPerMeter,
 					const TArray<FWindMotorBaseParamBase*>& AllWindMotors,
-					FWindVelocityTexturesDoubleBuffer* WindVelocityTexturesDoubleBuffer);
+					FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
 };
 
 

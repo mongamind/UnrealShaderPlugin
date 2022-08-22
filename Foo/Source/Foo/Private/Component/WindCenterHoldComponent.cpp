@@ -74,7 +74,7 @@ void UWindCenterHoldComponent::GetWindSettingParam(FWindSetting& WindSetting)
 	}
 		
 	
-	WindSetting.InMaxWindVelocity = InMaxWindVelocity;
+	WindSetting.MaxWindVelocity = MaxWindVelocity;
 	WindSetting.OriginalAlpha = OriginalAlpha;
 	WindSetting.BetaNearAdd = BetaNearAdd;
 }

@@ -12,7 +12,7 @@ void UWindDiffusionLibrary::DrawWindDiffusion_RenderThread(
 		FRHICommandListImmediate& RHICmdList,
 		ERHIFeatureLevel::Type FeatureLevel,
 		const FWindSetting& WindSetting,
-		FWindVelocityTexturesDoubleBuffer* WindVelocityTexturesDoubleBuffer)
+		FWindVelocityTextures* WindVelocityTexturesDoubleBuffer)
 {
 	check(IsInRenderingThread())
 
@@ -25,49 +25,47 @@ void UWindDiffusionLibrary::DrawWindDiffusion_RenderThread(
 	TShaderMapRef<FWindOneAxisDiffusionShader> ZAxisComputeShader(GetGlobalShaderMap(FeatureLevel));
 	RHICmdList.SetComputeShader(ZAxisComputeShader.GetComputeShader());
 	
-	FComputeFenceRHIRef XAxisFence;
-	FComputeFenceRHIRef YAxisFence;
-	FComputeFenceRHIRef ZAxisFence;
+	FComputeFenceRHIRef XAxisFence = RHICmdList.CreateComputeFence(TEXT("WindXAxisFence"));
+	FComputeFenceRHIRef YAxisFence = RHICmdList.CreateComputeFence(TEXT("WindYAxisFence"));
+	FComputeFenceRHIRef ZAxisFence = RHICmdList.CreateComputeFence(TEXT("WindZAxisFence"));
 	for(int i = 0;i < DIFFUSIONTIMES_EVERFRAME;++i)
 	{
-		WindVelocityTexturesDoubleBuffer->SwapBuffer();
-		const FWindVelocityTextures& LastDiffusionTextures = WindVelocityTexturesDoubleBuffer->GetLastVelocityTextures();
-		const FWindVelocityTextures& CurDiffusionTextures = WindVelocityTexturesDoubleBuffer->GetCurVelocityTextures();
-		// DiffusionTextures.ClearUAVToBlack(RHICmdList);
 		if(i != 0)
 		{
-			XAxisComputeShader->UnsetParameters(RHICmdList, EResourceTransitionAccess::EMetaData, EResourceTransitionPipeline::EComputeToCompute, LastDiffusionTextures.WindDiffusionXAxisTexture_UAV, XAxisFence);
-			XAxisComputeShader->UnbindBuffers(RHICmdList);
+			XAxisComputeShader->UnsetParameters(RHICmdList, EResourceTransitionAccess::ERWBarrier, EResourceTransitionPipeline::EComputeToCompute, WindVelocityTexturesDoubleBuffer->GetCurXAxisUAV(), XAxisFence);
+			RHICmdList.WaitComputeFence(XAxisFence);
+			WindVelocityTexturesDoubleBuffer->SwapXAxisBuff();
 		}
-		XAxisFence = RHICmdList.CreateComputeFence(TEXT("WindXAxisDiffusion"));
-		XAxisComputeShader->SetParameters(RHICmdList,WindSetting,CurDiffusionTextures.WindDiffusionXAxisTexture_UAV,LastDiffusionTextures.WindDiffusionXAxisTexture_SRV);
+		// WindVelocityTexturesDoubleBuffer->ClearCurXAxisUAVToBlack(RHICmdList);  it will turn back if call this.
+		XAxisComputeShader->SetParameters(RHICmdList,WindSetting,WindVelocityTexturesDoubleBuffer->GetCurXAxisUAV(),WindVelocityTexturesDoubleBuffer->GetCurXAxisSRV());
 		DispatchComputeShader(RHICmdList,XAxisComputeShader,1,1,1);
-		// XAxisComputeShader->UnbindBuffers(RHICmdList);
 
 		if(i != 0)
 		{
-			YAxisComputeShader->UnsetParameters(RHICmdList, EResourceTransitionAccess::EMetaData, EResourceTransitionPipeline::EComputeToCompute, LastDiffusionTextures.WindDiffusionYAxisTexture_UAV, YAxisFence);
-			YAxisComputeShader->UnbindBuffers(RHICmdList);
+			YAxisComputeShader->UnsetParameters(RHICmdList, EResourceTransitionAccess::ERWBarrier, EResourceTransitionPipeline::EComputeToCompute, WindVelocityTexturesDoubleBuffer->GetCurYAxisUAV(), YAxisFence);
+			RHICmdList.WaitComputeFence(YAxisFence);
+			WindVelocityTexturesDoubleBuffer->SwapYAxisBuff();
 		}
-		YAxisFence = RHICmdList.CreateComputeFence(TEXT("WindYAxisDiffusion"));
-		YAxisComputeShader->SetParameters(RHICmdList,WindSetting,CurDiffusionTextures.WindDiffusionYAxisTexture_UAV,LastDiffusionTextures.WindDiffusionYAxisTexture_SRV);
+		// WindVelocityTexturesDoubleBuffer->ClearCurYAxisUAVToBlack(RHICmdList);	it will turn back if call this.
+		YAxisComputeShader->SetParameters(RHICmdList,WindSetting,WindVelocityTexturesDoubleBuffer->GetCurYAxisUAV(),WindVelocityTexturesDoubleBuffer->GetCurYAxisSRV());
 		DispatchComputeShader(RHICmdList,YAxisComputeShader,1,1,1);
-		// YAxisComputeShader->UnbindBuffers(RHICmdList);
 
 		if(i != 0)
 		{
-			ZAxisComputeShader->UnsetParameters(RHICmdList, EResourceTransitionAccess::EMetaData, EResourceTransitionPipeline::EComputeToCompute, LastDiffusionTextures.WindDiffusionZAxisTexture_UAV, ZAxisFence);
-			YAxisComputeShader->UnbindBuffers(RHICmdList);
+			ZAxisComputeShader->UnsetParameters(RHICmdList, EResourceTransitionAccess::ERWBarrier, EResourceTransitionPipeline::EComputeToCompute,  WindVelocityTexturesDoubleBuffer->GetCurZAxisUAV(), ZAxisFence);
+			RHICmdList.WaitComputeFence(ZAxisFence);
+			WindVelocityTexturesDoubleBuffer->SwapZAxisBuff();
 		}
-		ZAxisFence = RHICmdList.CreateComputeFence(TEXT("WindZAxisDiffusion"));
-		ZAxisComputeShader->SetParameters(RHICmdList,WindSetting,CurDiffusionTextures.WindDiffusionZAxisTexture_UAV,LastDiffusionTextures.WindDiffusionZAxisTexture_SRV);
+		// WindVelocityTexturesDoubleBuffer->ClearCurZAxisUAVToBlack(RHICmdList);	it will turn back if call this.
+		ZAxisComputeShader->SetParameters(RHICmdList,WindSetting,WindVelocityTexturesDoubleBuffer->GetCurZAxisUAV(),WindVelocityTexturesDoubleBuffer->GetCurZAxisSRV());
 		DispatchComputeShader(RHICmdList,ZAxisComputeShader,1,1,1);
-		// ZAxisComputeShader->UnbindBuffers(RHICmdList);
 	}
 
-	const FWindVelocityTextures& LastDiffusionTextures = WindVelocityTexturesDoubleBuffer->GetCurVelocityTextures();
-	LastDiffusionTextures.Barrier(RHICmdList,EResourceTransitionAccess::EMetaData,EResourceTransitionPipeline::EComputeToCompute);
-	
+	FComputeFenceRHIRef AllAxisFence = RHICmdList.CreateComputeFence(TEXT("WindAllAxisFence"));
+	WindVelocityTexturesDoubleBuffer->Barrier(RHICmdList,EResourceTransitionAccess::ERWBarrier,EResourceTransitionPipeline::EComputeToCompute,AllAxisFence);
+	WindVelocityTexturesDoubleBuffer->SwapXAxisBuff();
+	WindVelocityTexturesDoubleBuffer->SwapYAxisBuff();
+	WindVelocityTexturesDoubleBuffer->SwapZAxisBuff();
 }
 
 
@@ -81,7 +79,7 @@ void UWindDiffusionLibrary::DrawWindDiffusion(
 	ERHIFeatureLevel::Type FeatureLevel = World->Scene->GetFeatureLevel();
 
 	FWindSetting WindSetting = VelocityFieldData.WindSetting;
-	FWindVelocityTexturesDoubleBuffer* VelocityTexturesBuffer = VelocityFieldData.WindVelocityTexturesDoubleBuffer;
+	FWindVelocityTextures* VelocityTexturesBuffer = VelocityFieldData.WindVelocityTexturesDoubleBuffer;
 
 	ENQUEUE_RENDER_COMMAND(CaptureCommand)(
 		[FeatureLevel,WindSetting,VelocityTexturesBuffer](FRHICommandListImmediate& RHICmdList)

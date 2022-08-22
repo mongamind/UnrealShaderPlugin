@@ -20,7 +20,8 @@ public:
 	static void DrawWindTextureToRT(
 				const UObject* WorldContextObject,
 				float Padding,
-				FWindVelocityTexturesDoubleBuffer* WindTextureBuffers,
+				float MaxWindVelocity,
+				FWindVelocityTextures* WindTextureBuffers,
 				class UTextureRenderTarget2D* OutputRenderTarget);
 
 private:
@@ -29,6 +30,7 @@ private:
 		ERHIFeatureLevel::Type FeatureLevel,
 		FTextureRenderTargetResource* OutTextureRenderTargetResource,
 		float Padding,
+		float MaxWindVelocity,
 		FShaderResourceViewRHIRef TextureXAxisRHI,
 		FShaderResourceViewRHIRef TextureYAxisRHI,
 		FShaderResourceViewRHIRef TextureZAxisRHI);

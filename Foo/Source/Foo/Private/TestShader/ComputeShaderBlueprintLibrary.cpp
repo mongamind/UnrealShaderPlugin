@@ -213,9 +213,9 @@ public:
 	{ }
 };
 
-IMPLEMENT_SHADER_TYPE(, FMyComputeShaderShader, TEXT("/Plugin/Foo/Private/MyComputeShader.usf"), TEXT("MainCS"), SF_Compute)
-IMPLEMENT_SHADER_TYPE(, FMyTestShaderVS, TEXT("/Plugin/Foo/Private/MyTextureShader_ForComputeShaderTest.usf"), TEXT("MainVS"), SF_Vertex)
-IMPLEMENT_SHADER_TYPE(, FMyTestShaderPS, TEXT("/Plugin/Foo/Private/MyTextureShader_ForComputeShaderTest.usf"), TEXT("MainPS"), SF_Pixel)
+IMPLEMENT_SHADER_TYPE(, FMyComputeShaderShader, TEXT("/Plugin/Foo/Private/TestShader/MyComputeShader.usf"), TEXT("MainCS"), SF_Compute)
+IMPLEMENT_SHADER_TYPE(, FMyTestShaderVS, TEXT("/Plugin/Foo/Private/TestShader/MyTextureShader_ForComputeShaderTest.usf"), TEXT("MainVS"), SF_Vertex)
+IMPLEMENT_SHADER_TYPE(, FMyTestShaderPS, TEXT("/Plugin/Foo/Private/TestShader/MyTextureShader_ForComputeShaderTest.usf"), TEXT("MainPS"), SF_Pixel)
 
 static void DrawRenderTarget_RenderThread(
 	FRHICommandListImmediate& RHICmdList,

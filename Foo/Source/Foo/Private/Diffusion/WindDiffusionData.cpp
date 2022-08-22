@@ -11,18 +11,22 @@ IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FWindVelocityFieldData, "WindVelocityDa
 void FWindVelocityTextures::Init(EPixelFormat InFormat, uint32 InX, uint32 InY, uint32 InZ)
 {
 	FRHIResourceCreateInfo CreateInfo;
-	
-	WindDiffusionXAxisTexture = RHICreateTexture3D(InX, InY, InZ, InFormat, 1, TexCreate_ShaderResource | TexCreate_UAV, CreateInfo);
-	WindDiffusionXAxisTexture_UAV = RHICreateUnorderedAccessView(WindDiffusionXAxisTexture);
-	WindDiffusionXAxisTexture_SRV = RHICreateShaderResourceView(WindDiffusionXAxisTexture, 0);
 
-	WindDiffusionYAxisTexture = RHICreateTexture3D(InX, InY, InZ, InFormat, 1, TexCreate_ShaderResource | TexCreate_UAV, CreateInfo);
-	WindDiffusionYAxisTexture_UAV = RHICreateUnorderedAccessView(WindDiffusionYAxisTexture);
-	WindDiffusionYAxisTexture_SRV = RHICreateShaderResourceView(WindDiffusionYAxisTexture, 0);
+	for(int i = 0;i < 2;++i)
+	{
+		WindDiffusionXAxisTexture[i] = RHICreateTexture3D(InX, InY, InZ, InFormat, 1, TexCreate_ShaderResource | TexCreate_UAV, CreateInfo);
+		WindDiffusionXAxisTexture_UAV[i] = RHICreateUnorderedAccessView(WindDiffusionXAxisTexture[i]);
+		WindDiffusionXAxisTexture_SRV[i] = RHICreateShaderResourceView(WindDiffusionXAxisTexture[i], 0);
 
-	WindDiffusionZAxisTexture = RHICreateTexture3D(InX, InY, InZ, InFormat, 1, TexCreate_ShaderResource | TexCreate_UAV, CreateInfo);
-	WindDiffusionZAxisTexture_UAV = RHICreateUnorderedAccessView(WindDiffusionZAxisTexture);
-	WindDiffusionZAxisTexture_SRV = RHICreateShaderResourceView(WindDiffusionZAxisTexture, 0);
+		WindDiffusionYAxisTexture[i] = RHICreateTexture3D(InX, InY, InZ, InFormat, 1, TexCreate_ShaderResource | TexCreate_UAV, CreateInfo);
+		WindDiffusionYAxisTexture_UAV[i] = RHICreateUnorderedAccessView(WindDiffusionYAxisTexture[i]);
+		WindDiffusionYAxisTexture_SRV[i] = RHICreateShaderResourceView(WindDiffusionYAxisTexture[i], 0);
+
+		WindDiffusionZAxisTexture[i] = RHICreateTexture3D(InX, InY, InZ, InFormat, 1, TexCreate_ShaderResource | TexCreate_UAV, CreateInfo);
+		WindDiffusionZAxisTexture_UAV[i] = RHICreateUnorderedAccessView(WindDiffusionZAxisTexture[i]);
+		WindDiffusionZAxisTexture_SRV[i] = RHICreateShaderResourceView(WindDiffusionZAxisTexture[i], 0);
+	}
+
 
 	SizeX = InX;
 	SizeY = InY;
@@ -31,54 +35,69 @@ void FWindVelocityTextures::Init(EPixelFormat InFormat, uint32 InX, uint32 InY, 
 
 void FWindVelocityTextures::Release()
 {
-	WindDiffusionXAxisTexture.SafeRelease();
-	WindDiffusionXAxisTexture_UAV.SafeRelease();
-	WindDiffusionXAxisTexture_SRV.SafeRelease();
+	for(int i = 0;i < 2;++i)
+	{
+		WindDiffusionXAxisTexture[i].SafeRelease();
+		WindDiffusionXAxisTexture_UAV[i].SafeRelease();
+		WindDiffusionXAxisTexture_SRV[i].SafeRelease();
 
-	WindDiffusionYAxisTexture.SafeRelease();
-	WindDiffusionYAxisTexture_UAV.SafeRelease();
-	WindDiffusionYAxisTexture_SRV.SafeRelease();
+		WindDiffusionYAxisTexture[i].SafeRelease();
+		WindDiffusionYAxisTexture_UAV[i].SafeRelease();
+		WindDiffusionYAxisTexture_SRV[i].SafeRelease();
 
-	WindDiffusionZAxisTexture.SafeRelease();
-	WindDiffusionZAxisTexture_UAV.SafeRelease();
-	WindDiffusionZAxisTexture_SRV.SafeRelease();
+		WindDiffusionZAxisTexture[i].SafeRelease();
+		WindDiffusionZAxisTexture_UAV[i].SafeRelease();
+		WindDiffusionZAxisTexture_SRV[i].SafeRelease();
+	}
+
 	
 	SizeX = 0;
 	SizeY = 0;
 	SizeZ = 0;
 }
 
-void FWindVelocityTextures::ClearUAVToBlack(FRHICommandList& RHICmdList) const
+void FWindVelocityTextures::ClearCurXAxisUAVToBlack(FRHICommandList& RHICmdList) const
 {
-	RHICmdList.ClearUAVFloat(WindDiffusionXAxisTexture_UAV,FVector4(0,0,0,0));
-	RHICmdList.ClearUAVFloat(WindDiffusionYAxisTexture_UAV,FVector4(0,0,0,0));
-	RHICmdList.ClearUAVFloat(WindDiffusionZAxisTexture_UAV,FVector4(0,0,0,0));
+	RHICmdList.ClearUAVFloat(GetCurXAxisUAV(),FVector4(0,0,0,0));
 }
 
-void FWindVelocityTextures::Barrier(FRHICommandList& RHICmdList, EResourceTransitionAccess InBarrierMode, EResourceTransitionPipeline InPipeline) const
+void FWindVelocityTextures::ClearCurYAxisUAVToBlack(FRHICommandList& RHICmdList) const
 {
-	RHICmdList.TransitionResource(InBarrierMode, InPipeline, WindDiffusionXAxisTexture_UAV);
-	RHICmdList.TransitionResource(InBarrierMode, InPipeline, WindDiffusionYAxisTexture_UAV);
-	RHICmdList.TransitionResource(InBarrierMode, InPipeline, WindDiffusionZAxisTexture_UAV);
+	RHICmdList.ClearUAVFloat(GetCurYAxisUAV(),FVector4(0,0,0,0));
+}
+
+void FWindVelocityTextures::ClearCurZAxisUAVToBlack(FRHICommandList& RHICmdList) const
+{
+	RHICmdList.ClearUAVFloat(GetCurZAxisUAV(),FVector4(0,0,0,0));
+}
+
+void FWindVelocityTextures::Barrier(FRHICommandList& RHICmdList, EResourceTransitionAccess InBarrierMode, EResourceTransitionPipeline InPipeline,FRHIComputeFence* Fence) const
+{
+	FRHIUnorderedAccessView* UAVs[] = {
+		GetCurXAxisUAV(),
+		GetCurYAxisUAV(),
+		GetCurZAxisUAV()
+	};
+	RHICmdList.TransitionResources(InBarrierMode, InPipeline, UAVs,3, Fence);
 }
 
 
 
-void FWindVelocityTexturesDoubleBuffer::InitVelocityTextures()
-{
-	for (int index = 0;index < 2;++index)
-	{
-		VelocityTextures[index].Init(EPixelFormat::PF_R32_FLOAT,32,32,16);
-	}
-}
-
-void FWindVelocityTexturesDoubleBuffer::ReleaseVelocityTextures()
-{
-	for (int index = 0;index < 2;++index)
-	{
-		VelocityTextures[index].Release();
-	}
-}
+// void FWindVelocityTexturesDoubleBuffer::InitVelocityTextures()
+// {
+// 	for (int index = 0;index < 2;++index)
+// 	{
+// 		VelocityTextures[index].Init(EPixelFormat::PF_R32_FLOAT,32,32,16);
+// 	}
+// }
+//
+// void FWindVelocityTexturesDoubleBuffer::ReleaseVelocityTextures()
+// {
+// 	for (int index = 0;index < 2;++index)
+// 	{
+// 		VelocityTextures[index].Release();
+// 	}
+// }
 
 
 
@@ -151,7 +170,7 @@ void FWindOneAxisDiffusionShader::SetParameters(
 		SetSRVParameter(RHICmdList,ComputeShaderRHI,InTexture,WindDiffusionOneAxisTexture_SRV);
 
 		FWindVelocityFieldData UniformData;
-		UniformData.InMaxWindVelocity = WindSetting.InMaxWindVelocity;
+		UniformData.InMaxWindVelocity = WindSetting.MaxWindVelocity;
 		UniformData.InPosDelta = WindSetting.InPosDelta;
 		UniformData.OriginalAlpha = WindSetting.OriginalAlpha;
 		UniformData.BetaNearAdd = WindSetting.BetaNearAdd;
@@ -181,10 +200,28 @@ void FWindOneAxisDiffusionShader::UnsetParameters(
 	FRHIComputeShader* ShaderRHI = RHICmdList.GetBoundComputeShader();
 
 	SetUAVParameter(RHICmdList, ShaderRHI, OutTexture, FUnorderedAccessViewRHIRef());
+	RHICmdList.TransitionResource(TransitionAccess, TransitionPipeline, WindDiffusionOneAxisTexture_UAV, Fence);
+	
+}
+
+void FWindOneAxisDiffusionShader::UnsetParameters(
+		FRHICommandList& RHICmdList,
+		EResourceTransitionAccess TransitionAccess,
+		EResourceTransitionPipeline TransitionPipeline,
+		FUnorderedAccessViewRHIRef WindDiffusionXAxisTexture_UAV,
+		FUnorderedAccessViewRHIRef WindDiffusionYAxisTexture_UAV,
+		FUnorderedAccessViewRHIRef WindDiffusionZAxisTexture_UAV,
+		FRHIComputeFence* Fence)
+{
+	FRHIComputeShader* ShaderRHI = RHICmdList.GetBoundComputeShader();
+
+	SetUAVParameter(RHICmdList, ShaderRHI, OutTexture, FUnorderedAccessViewRHIRef());
 	FRHIUnorderedAccessView* UAVs[] = {
-		WindDiffusionOneAxisTexture_UAV
+		WindDiffusionXAxisTexture_UAV,
+		WindDiffusionYAxisTexture_UAV,
+		WindDiffusionZAxisTexture_UAV
 	};
-	RHICmdList.TransitionResources(TransitionAccess, TransitionPipeline, UAVs, 1, Fence);
+	RHICmdList.TransitionResources(TransitionAccess, TransitionPipeline, UAVs,3, Fence);
 }
 
 IMPLEMENT_SHADER_TYPE(, FWindOneAxisDiffusionShader, TEXT("/Plugin/Foo/Private/ComputeShader/Diffusion/WindOneAxisDiffusion.usf"), TEXT("MainCS"), SF_Compute)

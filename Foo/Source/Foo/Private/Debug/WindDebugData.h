@@ -85,10 +85,13 @@ public:
 	}
 
 	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment);
-	
+
+	template<typename TShaderRHIParamRef>
 	void SetParameters(
 		FRHICommandListImmediate& RHICmdList,
+		const TShaderRHIParamRef ShaderRHI,
 		float InPadding,
+		float InMaxWindVelocity,
 		FShaderResourceViewRHIRef WindDiffusionXAxisTexture_SRV,
 		FShaderResourceViewRHIRef WindDiffusionYAxisTexture_SRV,
 		FShaderResourceViewRHIRef WindDiffusionZAxisTexture_SRV);
@@ -96,11 +99,11 @@ public:
 	void UnbindBuffers(FRHICommandListImmediate& RHICmdList);
 
 private:
-	LAYOUT_FIELD(FShaderParameter, MyColor);
-	// LAYOUT_FIELD(FShaderParameter, Padding);
-	// LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionXAxisTexture);
-	// LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionYAxisTexture);
-	// LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionZAxisTexture);
+	LAYOUT_FIELD(FShaderParameter, Padding);
+	LAYOUT_FIELD(FShaderParameter, MaxWindVelocity);
+	LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionXAxisTexture);
+	LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionYAxisTexture);
+	LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionZAxisTexture);
 };
 
 class FWindDebugShaderVS : public FWindDebugShaderBase

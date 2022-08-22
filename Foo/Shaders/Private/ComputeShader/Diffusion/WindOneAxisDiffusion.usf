@@ -37,7 +37,7 @@ Texture3D<float> InTexture;  //texture for special dimension (x or y or z)
 // }
 // FWindVelocityFieldData WindVelocityData; 
 
-RWTexture2DArray<float> OutTexture;  //out result texture for special dimension (x or y or z)
+RWTexture3D<float> OutTexture;  //out result texture for special dimension (x or y or z)
 
 float ReadWindVelocityInTexture(uint3 GridPos,float3 GridPosDelta,int3 GridDirection)
 {
@@ -68,13 +68,11 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
         float valUp = ReadWindVelocityInTexture(GridPos,GridPosDelta,int3(0,0,-1));
         
         float valNew = (valOrignal * WindVelocityData.OriginalAlpha + valFront + valBack + valLeft + valRight + valDown + valUp) * WindVelocityData.BetaNearAdd;
-        
-        float valAbs = abs(valNew);
-        float Negative = (valNew / valAbs);
-        valAbs = min(valAbs,WindVelocityData.InMaxWindVelocity);
-        valNew =  Negative * valAbs;   
 
+        valNew = max(-WindVelocityData.InMaxWindVelocity,min(WindVelocityData.InMaxWindVelocity,valNew));
+
+        // valNew = valOrignal + 0.5;
         // WriteWindVelocityToTexture(GridPos,valNew);
-        WriteWindVelocityToTexture(GridPos,1.0f);
+        WriteWindVelocityToTexture(GridPos,1);
     }
 }

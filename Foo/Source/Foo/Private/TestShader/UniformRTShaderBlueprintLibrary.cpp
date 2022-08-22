@@ -165,8 +165,8 @@ public:
 	{ }
 };
 
-IMPLEMENT_SHADER_TYPE(, FMyUniformShaderVS, TEXT("/Plugin/Foo/Private/MyUniformShader.usf"), TEXT("MainVS"), SF_Vertex)
-IMPLEMENT_SHADER_TYPE(, FMyUniformShaderPS, TEXT("/Plugin/Foo/Private/MyUniformShader.usf"), TEXT("MainPS"), SF_Pixel)
+IMPLEMENT_SHADER_TYPE(, FMyUniformShaderVS, TEXT("/Plugin/Foo/Private/TestShader/MyUniformShader.usf"), TEXT("MainVS"), SF_Vertex)
+IMPLEMENT_SHADER_TYPE(, FMyUniformShaderPS, TEXT("/Plugin/Foo/Private/TestShader/MyUniformShader.usf"), TEXT("MainPS"), SF_Pixel)
 
 static void DrawUniformToRenderTarget_RenderThread(
 	FRHICommandListImmediate& RHICmdList,

@@ -51,7 +51,6 @@ bool UWindMotorBaseComponent::GetWindMotorParamInternal(FWindMotorBaseParamBase*
 		{
 			OutMotorParam->MotorWorldSpacePos = Actor->GetActorLocation();
 			OutMotorParam->WindVelocity = Actor->GetActorForwardVector() * WindForce;
-			OutMotorParam->MaxVelocity = MaxVelocity;
 			return true;
 		}
 	}

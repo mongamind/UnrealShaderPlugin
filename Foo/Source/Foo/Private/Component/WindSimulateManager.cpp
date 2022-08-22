@@ -59,6 +59,14 @@ void UWindSimulateManager::UnsetPlayerHoldComponent(class UWindCenterHoldCompone
 		PlayerHoldComponent = nullptr;
 }
 
+float UWindSimulateManager::GetMaxWindVelocity()
+{
+	if(PlayerHoldComponent)
+		return PlayerHoldComponent->GeMaxWindVelocity();
+	
+	return 1.0f;
+}
+
 void UWindSimulateManager::Tick( float DeltaTime )
 {
 	if(PlayerHoldComponent == nullptr)
@@ -67,36 +75,45 @@ void UWindSimulateManager::Tick( float DeltaTime )
 	AActor* PlayerActor = PlayerHoldComponent->GetOwner();
 	if(!PlayerActor)
 		return;
+
+	if(RunCount > 1)
+		return;
+
+	++RunCount;
 		
-#pragma region Diffusion	
-	//Diffusion
-
-	PlayerHoldComponent->GetWindSettingParam(WindFieldData.WindSetting);
-	WindFieldData.WindVelocityTexturesDoubleBuffer = &WindVelocityTextureBuffer;
-	
-	UWindDiffusionLibrary::DrawWindDiffusion(GetWorld(),WindFieldData);
-#pragma endregion Diffusion
-
-	
-// #pragma region Apply Motors
-// 	TArray<FWindMotorBaseParamBase*>& MotorParams = WindMotorData.AllWindMotors;
-// 	MotorParams.Empty();
-// 	for(UWindMotorBaseComponent* MotorComponent : WindMotorsRegistered)
-// 	{
-// 		if(!MotorComponent->IsPendingKill())
-// 		{
-// 			FWindMotorBaseParamBase* MotorParam = MotorComponent->GetWindMotorParam();
-// 			if(MotorParam)
-// 				MotorParams.Add(MotorParam);
-// 		}
-// 	}
+// #pragma region Diffusion	
+// 	//Diffusion
+//
+// 	PlayerHoldComponent->GetWindSettingParam(WindFieldData.WindSetting);
+// 	WindFieldData.WindVelocityTexturesDoubleBuffer = &WindVelocityTextureBuffer;
 // 	
-// 	if(MotorParams.Num() > 0)
-// 	{
-// 		WindMotorData.WindVelocityTexturesDoubleBuffer = &WindVelocityTextureBuffer;
-// 		UWindMotorLibrary::ApplyWindMotors(GetWorld(),WindMotorData);
-// 	}
-// #pragma endregion Apply Motors
+// 	UWindDiffusionLibrary::DrawWindDiffusion(GetWorld(),WindFieldData);
+// #pragma endregion Diffusion
+
+	
+#pragma region Apply Motors
+	WindMotorData.MaxVelocity = PlayerHoldComponent->GeMaxWindVelocity();
+	WindMotorData.PlayerWorldPos = PlayerActor->GetActorLocation();
+	WindMotorData.TexelsPerMeter = PlayerHoldComponent->GetTexelsPerMeter();
+	
+	TArray<FWindMotorBaseParamBase*>& MotorParams = WindMotorData.AllWindMotors;
+	MotorParams.Empty();
+	for(UWindMotorBaseComponent* MotorComponent : WindMotorsRegistered)
+	{
+		if(!MotorComponent->IsPendingKill())
+		{
+			FWindMotorBaseParamBase* MotorParam = MotorComponent->GetWindMotorParam();
+			if(MotorParam)
+				MotorParams.Add(MotorParam);
+		}
+	}
+	
+	if(MotorParams.Num() > 0)
+	{
+		WindMotorData.WindVelocityTexturesDoubleBuffer = &WindVelocityTextureBuffer;
+		UWindMotorLibrary::ApplyWindMotors(GetWorld(),WindMotorData);
+	}
+#pragma endregion Apply Motors
 }
 
 TStatId UWindSimulateManager::GetStatId() const
@@ -106,10 +123,10 @@ TStatId UWindSimulateManager::GetStatId() const
 
 void UWindSimulateManager::InitWindVelocityTextureBuffers()
 {
-	WindVelocityTextureBuffer.InitVelocityTextures();
+	WindVelocityTextureBuffer.Init(EPixelFormat::PF_R32_FLOAT,32,32,16);
 }
 
 void UWindSimulateManager::ReleaseWindVelocityTextureBuffers()
 {
-	WindVelocityTextureBuffer.ReleaseVelocityTextures();
+	WindVelocityTextureBuffer.Release();
 }

@@ -24,7 +24,7 @@ private:
 					FRHICommandListImmediate& RHICmdList,
 					ERHIFeatureLevel::Type FeatureLevel,
 					const FWindSetting& WindSetting,
-					FWindVelocityTexturesDoubleBuffer* WindVelocityTexturesDoubleBuffer);
+					FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
 };
 
 

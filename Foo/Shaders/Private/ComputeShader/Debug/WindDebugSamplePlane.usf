@@ -21,12 +21,11 @@
 
 #define TEXTURE3D_LAYERCOUNT 16
 
-float4 MyColor;
-
-// float Padding;
-// Texture3D<float> WindDiffusionXAxisTexture;
-// Texture3D<float> WindDiffusionYAxisTexture;
-// Texture3D<float> WindDiffusionZAxisTexture;
+float Padding;
+float MaxWindVelocity;
+Texture3D<float> WindDiffusionXAxisTexture;
+Texture3D<float> WindDiffusionYAxisTexture;
+Texture3D<float> WindDiffusionZAxisTexture;
 
 void MainVS(
     in float4 InPosition : ATTRIBUTE0,
@@ -40,25 +39,25 @@ void MainVS(
 }
 
 void MainPS(
-    // in float2 UV : TEXCOORD0,
+    in float2 UV : TEXCOORD0,
     out float4 OutColor : SV_Target0
     )
 {
-    // float xIndex = UV.x * TEXTURE3D_LAYERCOUNT;
-    // uint zLayer = (uint)xIndex;
-    // float xTexcoord = frac(xIndex);
-    //
-    // float SizeX,SizeY,SizeZ;
-    // WindDiffusionXAxisTexture.GetDimensions(SizeX,SizeY,SizeZ);
-    //
-    // uint3 GridCoord = uint3(xTexcoord * (SizeX + Padding),UV.y * SizeY,zLayer);
-    //
-    // // float Alpha = min(1,max(0,GridCoord.x - SizeX)); 
-    //
-    // float Red = WindDiffusionXAxisTexture[GridCoord];
-    // float Grean = WindDiffusionYAxisTexture[GridCoord];
-    // float Blue = WindDiffusionZAxisTexture[GridCoord];
+    float xIndex = UV.x * TEXTURE3D_LAYERCOUNT;
+    uint zLayer = (uint)xIndex;
+    float xTexcoord = frac(xIndex);
+    
+    float SizeX,SizeY,SizeZ;
+    WindDiffusionXAxisTexture.GetDimensions(SizeX,SizeY,SizeZ);
+    
+    uint3 GridCoord = uint3(xTexcoord * (SizeX + Padding),UV.y * SizeY,zLayer);
+    
+    float Alpha = 1 - min(1,max(0,GridCoord.x - SizeX + 1)); 
+    
+    float Red = WindDiffusionXAxisTexture[GridCoord] / MaxWindVelocity * 0.5 + 0.5;
+    float Grean = WindDiffusionYAxisTexture[GridCoord] / MaxWindVelocity * 0.5 + 0.5;
+    float Blue = WindDiffusionZAxisTexture[GridCoord] / MaxWindVelocity * 0.5 + 0.5;
 
     // * (SizeX + Padding) - SizeX
-    OutColor = float4(MyColor.rgb,1); //float4(Padding,Padding,Padding,1);//float4(Red,Grean,Blue,Alpha);
+    OutColor = float4(Red,Grean,Blue,Alpha);
 }
