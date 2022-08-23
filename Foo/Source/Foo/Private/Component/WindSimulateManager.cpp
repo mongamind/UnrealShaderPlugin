@@ -2,7 +2,7 @@
 
 
 #include "Component/WindSimulateManager.h"
-#include "Component/WindCenterHoldComponent.h"
+#include "Component/WindCenterComponent.h"
 #include "Component/WindMotorBaseComponent.h"
 #include "Diffusion/WindDiffusionLibrary.h"
 #include "Motor/WindMotorLibrary.h"
@@ -48,12 +48,12 @@ void UWindSimulateManager::UnregisterWindMotorComponent(class UWindMotorBaseComp
 	WindMotorsRegistered.Remove(MotorComponent);
 }
 
-void UWindSimulateManager::SetPlayerHoldComponent(class UWindCenterHoldComponent* InPlayerHoldComponent)
+void UWindSimulateManager::SetPlayerHoldComponent(class UWindCenterComponent* InPlayerHoldComponent)
 {
 	PlayerHoldComponent = InPlayerHoldComponent;
 }
 
-void UWindSimulateManager::UnsetPlayerHoldComponent(class UWindCenterHoldComponent* InPlayerHoldComponent)
+void UWindSimulateManager::UnsetPlayerHoldComponent(class UWindCenterComponent* InPlayerHoldComponent)
 {
 	if(PlayerHoldComponent == InPlayerHoldComponent)
 		PlayerHoldComponent = nullptr;
@@ -100,7 +100,7 @@ void UWindSimulateManager::Tick( float DeltaTime )
 	MotorParams.Empty();
 	for(UWindMotorBaseComponent* MotorComponent : WindMotorsRegistered)
 	{
-		if(!MotorComponent->IsPendingKill())
+		if(MotorComponent && !MotorComponent->IsPendingKill())
 		{
 			FWindMotorBaseParamBase* MotorParam = MotorComponent->GetWindMotorParam();
 			if(MotorParam)

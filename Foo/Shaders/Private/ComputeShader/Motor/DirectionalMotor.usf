@@ -36,7 +36,7 @@ Texture3D<float> InZAxisTexture;  //texture for special dimension (x or y or z)
 // float3 MotorWorldSpacePos[MotorDataMaxCount];
 // float3 MotorWindVelocity[MotorDataMaxCount];
 
-// FMotorUniformData
+// FDirectionalMotorUniformData
 // {
 //     uint NumMotors;
 //      float MaxVelocity;
@@ -46,7 +46,7 @@ Texture3D<float> InZAxisTexture;  //texture for special dimension (x or y or z)
 //     float3 MotorWorldSpacePos[MotorDataMaxCount];
 //     float3 MotorWindVelocity[MotorDataMaxCount];
 // }
-// FMotorUniformData MotorData;
+// FDirectionalMotorUniformData DirectionalMotorData;
 
 
 RWTexture3D<float> OutXAxisTexture;
@@ -55,13 +55,13 @@ RWTexture3D<float> OutZAxisTexture;
 
 float LimitInMaxVelocity(float Velocity)
 {
-    return max(min(Velocity,MotorData.MaxVelocity),-MotorData.MaxVelocity);
+    return max(min(Velocity,DirectionalMotorData.MaxVelocity),-DirectionalMotorData.MaxVelocity);
 }
 
 
 void ModifyVelocityInTexture(uint3 GridPos,float3 WindVelocity)
 {
-    OutXAxisTexture[GridPos.xzy] =  MotorData.MaxVelocity;//LimitInMaxVelocity(InXAxisTexture[GridPos.xzy] + WindVelocity.x);//InXAxisTexture[GridPos.xzy] + WindVelocity.x;
+    OutXAxisTexture[GridPos.xzy] =  DirectionalMotorData.MaxVelocity;//LimitInMaxVelocity(InXAxisTexture[GridPos.xzy] + WindVelocity.x);//InXAxisTexture[GridPos.xzy] + WindVelocity.x;
     OutYAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(InYAxisTexture[GridPos.xzy] + WindVelocity.y);//InYAxisTexture[GridPos.xzy] + WindVelocity.y;
     OutZAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(InZAxisTexture[GridPos.xzy] + WindVelocity.z);//InZAxisTexture[GridPos.xzy] + WindVelocity.z;
 }
@@ -76,17 +76,17 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
     {
         uint3 GridPos = uint3(ThreadId.x,y,ThreadId.y);
         
-        for(int i = 0;i < MotorData.NumMotors;++i)
+        for(int i = 0;i < DirectionalMotorData.NumMotors;++i)
         {
-            float3 MotorPos = MotorData.MotorWorldSpacePos[i];
-            float3 Velocity = MotorData.MotorWindVelocity[i];
-            float Radius = MotorData.MotorRadius[i];
+            float3 MotorPos = DirectionalMotorData.MotorWorldSpacePos[i];
+            float3 Velocity = DirectionalMotorData.MotorWindVelocity[i];
+            float Radius = DirectionalMotorData.MotorRadius[i];
             
-            float3 GridMotorPos = (MotorPos - MotorData.InPlayerWorldSpacePos) * MotorData.TexelsPerMeter + GridPlayerPos;
+            float3 GridMotorPos = (MotorPos - DirectionalMotorData.InPlayerWorldSpacePos) * DirectionalMotorData.TexelsPerMeter + GridPlayerPos;
             float3 WindVelocity = Velocity;
             float3 deltaPos = GridMotorPos - GridPos;
             
-            if(length( deltaPos) < Radius * MotorData.TexelsPerMeter)
+            if(length( deltaPos) < Radius * DirectionalMotorData.TexelsPerMeter)
             {
                 ModifyVelocityInTexture(GridPos,WindVelocity);
             }

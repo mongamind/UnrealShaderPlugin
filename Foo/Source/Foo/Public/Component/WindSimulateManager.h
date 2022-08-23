@@ -29,10 +29,12 @@ public:
 	void RegisterWindMotorComponent(class UWindMotorBaseComponent* MotorComponent);
 	void UnregisterWindMotorComponent(class UWindMotorBaseComponent* MotorComponent);
 
-	void SetPlayerHoldComponent(class UWindCenterHoldComponent* InPlayerHoldComponent);
-	void UnsetPlayerHoldComponent(class UWindCenterHoldComponent* InPlayerHoldComponent);
+	void SetPlayerHoldComponent(class UWindCenterComponent* InPlayerHoldComponent);
+	void UnsetPlayerHoldComponent(class UWindCenterComponent* InPlayerHoldComponent);
 
 	float GetMaxWindVelocity();
+
+	FWindVelocityTextures& GetWindVelocityBuffer(){return WindVelocityTextureBuffer;};
 
 protected:
 	virtual void Tick( float DeltaTime ) override;
@@ -49,7 +51,7 @@ private:
 	TSet<class UWindMotorBaseComponent*> WindMotorsRegistered;
 
 	UPROPERTY(Transient)
-	class UWindCenterHoldComponent* PlayerHoldComponent;
+	class UWindCenterComponent* PlayerHoldComponent;
 
 	FWindVelocityFieldDataParam WindFieldData;
 	FWindMotorParamData WindMotorData;

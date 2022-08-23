@@ -28,6 +28,33 @@ private:
 					float TexelsPerMeter,
 					const TArray<FWindMotorBaseParamBase*>& AllWindMotors,
 					FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
+
+	static void ApplyDirectionWindMotors_RenderThread(
+				FRHICommandListImmediate& RHICmdList,
+				ERHIFeatureLevel::Type FeatureLevel,
+				FVector PlayerWorldPos,
+				float MaxVelocity,
+				float TexelsPerMeter,
+				const TArray<class FDirectionalMotorParam*>& AllWindMotors,
+				FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
+
+	static void ApplySphereWindMotors_RenderThread(
+			FRHICommandListImmediate& RHICmdList,
+			ERHIFeatureLevel::Type FeatureLevel,
+			FVector PlayerWorldPos,
+			float MaxVelocity,
+			float TexelsPerMeter,
+			const TArray<class FSphereMotorParam*>& AllWindMotors,
+			FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
+
+	static void ApplyVortexWindMotors_RenderThread(
+			FRHICommandListImmediate& RHICmdList,
+			ERHIFeatureLevel::Type FeatureLevel,
+			FVector PlayerWorldPos,
+			float MaxVelocity,
+			float TexelsPerMeter,
+			const TArray<class FVortexMotorParam*>& AllWindMotors,
+			FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
 };
 
 

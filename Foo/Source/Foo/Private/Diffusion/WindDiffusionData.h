@@ -37,6 +37,14 @@ public:
 	void SwapYAxisBuff(){IndexCurYAxisTexture = (IndexCurYAxisTexture + 1) % 2;}
 	void SwapZAxisBuff(){IndexCurZAxisTexture = (IndexCurZAxisTexture + 1) % 2;}
 
+	void SwapAllBuffer()
+	{
+		SwapXAxisBuff();
+		SwapYAxisBuff();
+		SwapZAxisBuff();
+	}
+	
+
 	FUnorderedAccessViewRHIRef GetCurXAxisUAV()const {return WindDiffusionXAxisTexture_UAV[IndexCurXAxisTexture];}
 	FShaderResourceViewRHIRef GetCurXAxisSRV()const {return WindDiffusionXAxisTexture_SRV[(IndexCurXAxisTexture + 1) % 2];}
 

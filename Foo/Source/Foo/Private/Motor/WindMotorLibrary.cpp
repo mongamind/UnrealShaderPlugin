@@ -1,6 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "WindMotorLibrary.h"
+#include "DirectionalMotorData.h"
+#include "SphereMotorData.h"
+#include "VortexMotorData.h"
 
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine/Texture2DArray.h"
@@ -18,24 +21,69 @@ void UWindMotorLibrary::ApplyWindMotors_RenderThread(
 		FWindVelocityTextures* WindVelocityTexturesDoubleBuffer)
 {
 	check(IsInRenderingThread())
+	
 
-	TShaderMapRef<FWindDirectionalMotorShader> DirectionalWindComputeShader(GetGlobalShaderMap(FeatureLevel));
-	RHICmdList.SetComputeShader(DirectionalWindComputeShader.GetComputeShader());
-
-
-	TArray<FDirectionalWindMotorParam> AllDirectionalMotors;
+	TArray<FDirectionalMotorParam*> AllDirectionalMotors;
+	TArray<FSphereMotorParam*> AllSphereMotors;
+	TArray<FVortexMotorParam*> AllVortexMotors;
 	for(auto MotorParam : AllWindMotors)
 	{
 		if(MotorParam->GetWindMotorType() == EWindMotorType::WMT_Directional)
 		{
-			AllDirectionalMotors.Add(*(FDirectionalWindMotorParam*)(MotorParam)); 
+			AllDirectionalMotors.Add((FDirectionalMotorParam*)(MotorParam)); 
+		}
+		else if(MotorParam->GetWindMotorType() == EWindMotorType::WMT_Sphere)
+		{
+			AllSphereMotors.Add((FSphereMotorParam*)(MotorParam)); 
+		}
+		else if(MotorParam->GetWindMotorType() == EWindMotorType::WMT_Vortex)
+		{
+			AllVortexMotors.Add((FVortexMotorParam*)(MotorParam)); 
 		}
 	}
-	
-	// DiffusionTextures.ClearUAVToBlack(RHICmdList);
 
+	if(AllDirectionalMotors.Num() > 0)
+	{
+		ApplyDirectionWindMotors_RenderThread(RHICmdList,FeatureLevel,PlayerWorldPos,MaxVelocity,
+												TexelsPerMeter,AllDirectionalMotors,WindVelocityTexturesDoubleBuffer);
+
+		// WindVelocityTexturesDoubleBuffer->SwapAllBuffer();
+	}
+
+	if(AllSphereMotors.Num() > 0)
+	{
+		ApplySphereWindMotors_RenderThread(RHICmdList,FeatureLevel,PlayerWorldPos,MaxVelocity,
+												TexelsPerMeter,AllSphereMotors,WindVelocityTexturesDoubleBuffer);
+
+		// WindVelocityTexturesDoubleBuffer->SwapAllBuffer();
+	}
+		
 	
-	DirectionalWindComputeShader->SetParameters(RHICmdList,PlayerWorldPos,MaxVelocity,TexelsPerMeter,AllDirectionalMotors,
+	if(AllVortexMotors.Num() > 0)
+	{
+		ApplyVortexWindMotors_RenderThread(RHICmdList,FeatureLevel,PlayerWorldPos,MaxVelocity,
+												TexelsPerMeter,AllVortexMotors,WindVelocityTexturesDoubleBuffer);
+
+		// WindVelocityTexturesDoubleBuffer->SwapAllBuffer();
+	}
+		
+	WindVelocityTexturesDoubleBuffer->SwapAllBuffer();
+
+}
+
+void UWindMotorLibrary::ApplyDirectionWindMotors_RenderThread(
+				FRHICommandListImmediate& RHICmdList,
+				ERHIFeatureLevel::Type FeatureLevel,
+				FVector PlayerWorldPos,
+				float MaxVelocity,
+				float TexelsPerMeter,
+				const TArray<FDirectionalMotorParam*>& AllWindMotors,
+				FWindVelocityTextures* WindVelocityTexturesDoubleBuffer)
+{
+
+	TShaderMapRef<FDirectionalMotorShader> DirectionalWindComputeShader(GetGlobalShaderMap(FeatureLevel));
+	RHICmdList.SetComputeShader(DirectionalWindComputeShader.GetComputeShader());
+	DirectionalWindComputeShader->SetParameters(RHICmdList,PlayerWorldPos,MaxVelocity,TexelsPerMeter,AllWindMotors,
 												WindVelocityTexturesDoubleBuffer->GetCurXAxisUAV(),
 												WindVelocityTexturesDoubleBuffer->GetCurXAxisSRV(),
 												WindVelocityTexturesDoubleBuffer->GetCurYAxisUAV(),
@@ -55,10 +103,72 @@ void UWindMotorLibrary::ApplyWindMotors_RenderThread(
 												WindVelocityTexturesDoubleBuffer->GetCurYAxisUAV(),
 												WindVelocityTexturesDoubleBuffer->GetCurZAxisUAV(),
 												DirectionalMotorFence);
+}
 
-	WindVelocityTexturesDoubleBuffer->SwapXAxisBuff();
-	WindVelocityTexturesDoubleBuffer->SwapYAxisBuff();
-	WindVelocityTexturesDoubleBuffer->SwapZAxisBuff();
+void UWindMotorLibrary::ApplySphereWindMotors_RenderThread(
+		FRHICommandListImmediate& RHICmdList,
+		ERHIFeatureLevel::Type FeatureLevel,
+		FVector PlayerWorldPos,
+		float MaxVelocity,
+		float TexelsPerMeter,
+		const TArray<FSphereMotorParam*>& AllWindMotors,
+		FWindVelocityTextures* WindVelocityTexturesDoubleBuffer)
+{
+	TShaderMapRef<FSphereMotorShader> SphereWindComputeShader(GetGlobalShaderMap(FeatureLevel));
+	RHICmdList.SetComputeShader(SphereWindComputeShader.GetComputeShader());
+	SphereWindComputeShader->SetParameters(RHICmdList,PlayerWorldPos,MaxVelocity,TexelsPerMeter,AllWindMotors,
+												WindVelocityTexturesDoubleBuffer->GetCurXAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurXAxisSRV(),
+												WindVelocityTexturesDoubleBuffer->GetCurYAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurYAxisSRV(),
+												WindVelocityTexturesDoubleBuffer->GetCurZAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurZAxisSRV());
+
+	
+
+	DispatchComputeShader(RHICmdList,SphereWindComputeShader,1,1,1);
+
+	
+	FComputeFenceRHIRef SphereMotorFence = RHICmdList.CreateComputeFence(TEXT("SphereMotor"));
+	SphereWindComputeShader->UnsetParameters(RHICmdList,
+												EResourceTransitionAccess::ERWBarrier, EResourceTransitionPipeline::EComputeToCompute,
+												WindVelocityTexturesDoubleBuffer->GetCurXAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurYAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurZAxisUAV(),
+												SphereMotorFence);
+}
+
+void UWindMotorLibrary::ApplyVortexWindMotors_RenderThread(
+		FRHICommandListImmediate& RHICmdList,
+		ERHIFeatureLevel::Type FeatureLevel,
+		FVector PlayerWorldPos,
+		float MaxVelocity,
+		float TexelsPerMeter,
+		const TArray<FVortexMotorParam*>& AllWindMotors,
+		FWindVelocityTextures* WindVelocityTexturesDoubleBuffer)
+{
+	TShaderMapRef<FVortexMotorShader> VortexWindComputeShader(GetGlobalShaderMap(FeatureLevel));
+	RHICmdList.SetComputeShader(VortexWindComputeShader.GetComputeShader());
+	VortexWindComputeShader->SetParameters(RHICmdList,PlayerWorldPos,MaxVelocity,TexelsPerMeter,AllWindMotors,
+												WindVelocityTexturesDoubleBuffer->GetCurXAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurXAxisSRV(),
+												WindVelocityTexturesDoubleBuffer->GetCurYAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurYAxisSRV(),
+												WindVelocityTexturesDoubleBuffer->GetCurZAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurZAxisSRV());
+
+	
+
+	DispatchComputeShader(RHICmdList,VortexWindComputeShader,1,1,1);
+
+	
+	FComputeFenceRHIRef VortexMotorFence = RHICmdList.CreateComputeFence(TEXT("VortexMotor"));
+	VortexWindComputeShader->UnsetParameters(RHICmdList,
+												EResourceTransitionAccess::ERWBarrier, EResourceTransitionPipeline::EComputeToCompute,
+												WindVelocityTexturesDoubleBuffer->GetCurXAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurYAxisUAV(),
+												WindVelocityTexturesDoubleBuffer->GetCurZAxisUAV(),
+												VortexMotorFence);
 }
 
 
