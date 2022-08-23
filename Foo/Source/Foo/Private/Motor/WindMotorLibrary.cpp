@@ -31,12 +31,6 @@ void UWindMotorLibrary::ApplyWindMotors_RenderThread(
 			AllDirectionalMotors.Add(*(FDirectionalWindMotorParam*)(MotorParam)); 
 		}
 	}
-
-	// WindVelocityTexturesDoubleBuffer->SwapXAxisBuff();
-	// WindVelocityTexturesDoubleBuffer->SwapYAxisBuff();
-	// WindVelocityTexturesDoubleBuffer->SwapZAxisBuff();
-	// const FWindVelocityTextures& DiffusionTextures = WindVelocityTexturesDoubleBuffer->GetCurVelocityTextures();
-
 	
 	// DiffusionTextures.ClearUAVToBlack(RHICmdList);
 

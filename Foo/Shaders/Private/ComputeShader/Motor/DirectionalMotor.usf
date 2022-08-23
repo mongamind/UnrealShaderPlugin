@@ -61,9 +61,9 @@ float LimitInMaxVelocity(float Velocity)
 
 void ModifyVelocityInTexture(uint3 GridPos,float3 WindVelocity)
 {
-    OutXAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(WindVelocity.x);//InXAxisTexture[GridPos.xzy] + WindVelocity.x;
-    OutYAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(WindVelocity.y);//InYAxisTexture[GridPos.xzy] + WindVelocity.y;
-    OutZAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(WindVelocity.z);//InZAxisTexture[GridPos.xzy] + WindVelocity.z;
+    OutXAxisTexture[GridPos.xzy] =  MotorData.MaxVelocity;//LimitInMaxVelocity(InXAxisTexture[GridPos.xzy] + WindVelocity.x);//InXAxisTexture[GridPos.xzy] + WindVelocity.x;
+    OutYAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(InYAxisTexture[GridPos.xzy] + WindVelocity.y);//InYAxisTexture[GridPos.xzy] + WindVelocity.y;
+    OutZAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(InZAxisTexture[GridPos.xzy] + WindVelocity.z);//InZAxisTexture[GridPos.xzy] + WindVelocity.z;
 }
 
 [numthreads(32,32,1)]
@@ -75,6 +75,7 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
     for(int y = 0; y < YAxisTexel;++y)
     {
         uint3 GridPos = uint3(ThreadId.x,y,ThreadId.y);
+        
         for(int i = 0;i < MotorData.NumMotors;++i)
         {
             float3 MotorPos = MotorData.MotorWorldSpacePos[i];
@@ -83,12 +84,11 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
             
             float3 GridMotorPos = (MotorPos - MotorData.InPlayerWorldSpacePos) * MotorData.TexelsPerMeter + GridPlayerPos;
             float3 WindVelocity = Velocity;
-            float3 deltaPos = GridPlayerPos - GridPos;
-            //ModifyVelocityInTexture(GridPos,deltaPos);//float3(deltaPos.x / XAxisTexel,deltaPos.x / XAxisTexel,deltaPos.x / XAxisTexel));
-            if(length( GridMotorPos - GridPos) < Radius * MotorData.TexelsPerMeter)
+            float3 deltaPos = GridMotorPos - GridPos;
+            
+            if(length( deltaPos) < Radius * MotorData.TexelsPerMeter)
             {
-                ModifyVelocityInTexture(GridPos,float3(1,0,0));
-                //ModifyVelocityInTexture(GridPos,WindVelocity);
+                ModifyVelocityInTexture(GridPos,WindVelocity);
             }
         }
     }

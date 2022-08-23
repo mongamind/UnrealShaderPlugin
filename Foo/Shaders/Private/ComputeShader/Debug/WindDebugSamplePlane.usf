@@ -53,11 +53,11 @@ void MainPS(
     uint3 GridCoord = uint3(xTexcoord * (SizeX + Padding),UV.y * SizeY,zLayer);
     
     float Alpha = 1 - min(1,max(0,GridCoord.x - SizeX + 1)); 
-    
-    float Red = WindDiffusionXAxisTexture[GridCoord] / MaxWindVelocity * 0.5 + 0.5;
-    float Grean = WindDiffusionYAxisTexture[GridCoord] / MaxWindVelocity * 0.5 + 0.5;
-    float Blue = WindDiffusionZAxisTexture[GridCoord] / MaxWindVelocity * 0.5 + 0.5;
 
-    // * (SizeX + Padding) - SizeX
-    OutColor = float4(Red,Grean,Blue,Alpha);
+    //
+    float Red = (WindDiffusionXAxisTexture[GridCoord] / MaxWindVelocity) * 0.5  + 0.5 ;
+    float Grean = (WindDiffusionYAxisTexture[GridCoord] / MaxWindVelocity) * 0.5 + 0.5 ;
+    float Blue = (WindDiffusionZAxisTexture[GridCoord] / MaxWindVelocity) * 0.5 + 0.5 ;
+    
+    OutColor = float4(Red ,Grean,Blue,Alpha);
 }

@@ -73,6 +73,7 @@ void FWindDirectionalMotorShader::SetParameters(
 		
 		UniformData.NumMotors = AllWindMotors.Num();
 		UniformData.MaxVelocity = MaxVelocity;
+		UniformData.TexelsPerMeter = TexelsPermeter;
 		UniformData.InPlayerWorldSpacePos = PlayerWorldPos;
 		SetUniformBufferParameterImmediate(RHICmdList,ComputeShaderRHI,GetUniformBufferParameter<FMotorUniformData>(), UniformData);
 		

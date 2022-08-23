@@ -76,19 +76,19 @@ void UWindSimulateManager::Tick( float DeltaTime )
 	if(!PlayerActor)
 		return;
 
-	if(RunCount > 1)
-		return;
+	// if(RunCount > 1)
+	// 	return;
 
 	++RunCount;
 		
-// #pragma region Diffusion	
-// 	//Diffusion
-//
-// 	PlayerHoldComponent->GetWindSettingParam(WindFieldData.WindSetting);
-// 	WindFieldData.WindVelocityTexturesDoubleBuffer = &WindVelocityTextureBuffer;
-// 	
-// 	UWindDiffusionLibrary::DrawWindDiffusion(GetWorld(),WindFieldData);
-// #pragma endregion Diffusion
+#pragma region Diffusion	
+	//Diffusion
+
+	PlayerHoldComponent->GetWindSettingParam(WindFieldData.WindSetting);
+	WindFieldData.WindVelocityTexturesDoubleBuffer = &WindVelocityTextureBuffer;
+	
+	UWindDiffusionLibrary::DrawWindDiffusion(GetWorld(),WindFieldData);
+#pragma endregion Diffusion
 
 	
 #pragma region Apply Motors
