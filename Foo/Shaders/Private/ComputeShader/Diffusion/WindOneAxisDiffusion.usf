@@ -20,10 +20,8 @@
 #include "/Engine/Public/Platform.ush"
 #include "/Engine/Private/Common.ush"
 
-#define XAxisTexel 32
-#define YAxisTexel 16
-#define ZAxisTexel 32
-#define TexelsPerMeter 1
+// #define MetersPerTexel float3(1,2,1)
+#define PosToMeter 0.01
 
 Texture3D<float> InTexture;  //texture for special dimension (x or y or z)
 
@@ -33,6 +31,7 @@ Texture3D<float> InTexture;  //texture for special dimension (x or y or z)
 //      float InMaxWindVelocity;
 //      float OriginalAlpha
 //      float BetaNearAdd;
+//      float3 MetersPerTexel;
 //     
 // }
 // FWindVelocityFieldData WindVelocityData; 
@@ -53,9 +52,12 @@ void WriteWindVelocityToTexture(uint3 GridPos,float valNew)
 [numthreads(32,32,1)]
 void MainCS(uint3 ThreadId : SV_DispatchThreadID)
 {
-    int3 GridPosDelta = WindVelocityData.InPosDelta * TexelsPerMeter;
+    float SizeX,SizeY,SizeZ;
+    InTexture.GetDimensions(SizeX,SizeY,SizeZ);
     
-    for(int y = 0; y < YAxisTexel;++y)
+    int3 GridPosDelta = WindVelocityData.InPosDelta * WindVelocityData.MetersPerTexel * PosToMeter;
+    
+    for(int y = 0; y < SizeZ;++y)
     {
         uint3 GridPos = uint3(ThreadId.x,y,ThreadId.y);     //32x32 thread group,
         

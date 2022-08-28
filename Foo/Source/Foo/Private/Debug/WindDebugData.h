@@ -106,32 +106,63 @@ private:
 	LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionZAxisTexture);
 };
 
-class FWindDebugShaderVS : public FWindDebugShaderBase
+class FWindDebugXYZAxisShaderVS : public FWindDebugShaderBase
 {
-	DECLARE_SHADER_TYPE(FWindDebugShaderVS, Global);
+	DECLARE_SHADER_TYPE(FWindDebugXYZAxisShaderVS, Global);
 public:
 
 	/** Default constructor. */
-	FWindDebugShaderVS() {}
+	FWindDebugXYZAxisShaderVS() {}
 
 	/** Initialization constructor. */
-	FWindDebugShaderVS(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
+	FWindDebugXYZAxisShaderVS(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
 		: FWindDebugShaderBase(Initializer)
 	{
 	}
 };
 
 
-class FWindDebugShaderPS : public FWindDebugShaderBase
+class FWindDebugXYZAxisShaderPS : public FWindDebugShaderBase
 {
-	DECLARE_SHADER_TYPE(FWindDebugShaderPS, Global);
+	DECLARE_SHADER_TYPE(FWindDebugXYZAxisShaderPS, Global);
 public:
 
 	/** Default constructor. */
-	FWindDebugShaderPS() {}
+	FWindDebugXYZAxisShaderPS() {}
 
 	/** Initialization constructor. */
-	FWindDebugShaderPS(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
+	FWindDebugXYZAxisShaderPS(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
 		: FWindDebugShaderBase(Initializer)
 	{ }
 };
+
+class FWindDebugTex3DShaderVS : public FWindDebugShaderBase
+{
+	DECLARE_SHADER_TYPE(FWindDebugTex3DShaderVS, Global);
+public:
+
+	/** Default constructor. */
+	FWindDebugTex3DShaderVS() {}
+
+	/** Initialization constructor. */
+	FWindDebugTex3DShaderVS(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
+		: FWindDebugShaderBase(Initializer)
+	{
+	}
+};
+
+
+class FWindDebugTex3DShaderPS : public FWindDebugShaderBase
+{
+	DECLARE_SHADER_TYPE(FWindDebugTex3DShaderPS, Global);
+public:
+
+	/** Default constructor. */
+	FWindDebugTex3DShaderPS() {}
+
+	/** Initialization constructor. */
+	FWindDebugTex3DShaderPS(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
+		: FWindDebugShaderBase(Initializer)
+	{ }
+};
+

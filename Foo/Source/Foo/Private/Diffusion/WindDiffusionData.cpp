@@ -171,6 +171,7 @@ void FWindOneAxisDiffusionShader::SetParameters(
 
 		FWindVelocityFieldData UniformData;
 		UniformData.InMaxWindVelocity = WindSetting.MaxWindVelocity;
+		UniformData.MetersPerTexel = WindSetting.MetersPerTexel;
 		UniformData.InPosDelta = WindSetting.InPosDelta;
 		UniformData.OriginalAlpha = WindSetting.OriginalAlpha;
 		UniformData.BetaNearAdd = WindSetting.BetaNearAdd;

@@ -15,6 +15,7 @@ struct FWindSetting
 	float MaxWindVelocity;                   //Max of wind velocity.
 	float OriginalAlpha = 0.9f;
 	float BetaNearAdd = 0.14f;
+	FVector MetersPerTexel;
 };
 
 
@@ -112,6 +113,7 @@ struct FWindVelocityFieldDataParam
 
 BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FWindVelocityFieldData, )
 	SHADER_PARAMETER(FVector,InPosDelta)
+	SHADER_PARAMETER(FVector,MetersPerTexel)
 	SHADER_PARAMETER(float,InMaxWindVelocity)
 	SHADER_PARAMETER(float,OriginalAlpha)
 	SHADER_PARAMETER(float,BetaNearAdd)

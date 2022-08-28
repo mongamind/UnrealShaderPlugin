@@ -26,12 +26,12 @@ public:
 	virtual class FWindMotorBaseParamBase* GetWindMotorParam() {return nullptr;};
 
 
-	UPROPERTY(EditAnywhere,Category="Wind Simulate")
-	float Radius = 1;
+	UPROPERTY(EditAnywhere,Category="Wind Simulate",DisplayName="Radius (Meter)")
+	float Radius = 5;
 
 	
 	UPROPERTY(EditAnywhere,Category="Wind Simulate")
-	float WindForce = 1;
+	float WindForce = 100;
 
 	
 protected:

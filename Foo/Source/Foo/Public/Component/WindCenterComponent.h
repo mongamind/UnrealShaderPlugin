@@ -24,7 +24,7 @@ public:
 	void GetWindSettingParam(FWindSetting& WindSetting);
 
 	float GeMaxWindVelocity(){return MaxWindVelocity;}
-	float GetTexelsPerMeter(){return TexelsPerMeter;}
+	FVector GetMetersPerTexel(){return MetersPerTexel;}
 
 protected:
 	// Called when the game starts
@@ -33,7 +33,7 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere,Category="Wind Simulate")
-	float TexelsPerMeter = 0.01;             
+	FVector MetersPerTexel = FVector(1,2,1);             
 	UPROPERTY(EditAnywhere,Category="Wind Simulate")
 	float MaxWindVelocity = 100;                   //Max of wind velocity.
 	UPROPERTY(EditAnywhere,Category="Wind Simulate")

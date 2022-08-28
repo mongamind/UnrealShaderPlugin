@@ -30,7 +30,7 @@ void FSphereMotorShader::SetParameters(
 	FRHICommandListImmediate& RHICmdList,
 	FVector PlayerWorldPos,
 	float MaxVelocity,
-	float TexelsPermeter,
+	FVector MetersPerTexel,
 	const TArray<FSphereMotorParam*>& AllWindMotors,
 	FUnorderedAccessViewRHIRef WindDiffusionXAxisTexture_UAV,
 	FShaderResourceViewRHIRef WindDiffusionXAxisTexture_SRV,
@@ -65,7 +65,7 @@ void FSphereMotorShader::SetParameters(
 		
 		UniformData.NumMotors = AllWindMotors.Num();
 		UniformData.MaxVelocity = MaxVelocity;
-		UniformData.TexelsPerMeter = TexelsPermeter;
+		UniformData.MetersPerTexel = MetersPerTexel;
 		UniformData.InPlayerWorldSpacePos = PlayerWorldPos;
 		SetUniformBufferParameterImmediate(RHICmdList,ComputeShaderRHI,GetUniformBufferParameter<FSphereMotorUniformData>(), UniformData);
 		

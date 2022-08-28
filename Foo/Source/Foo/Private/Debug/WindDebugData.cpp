@@ -6,11 +6,14 @@
 #include "ClearQuad.h"
 
 
-IMPLEMENT_SHADER_TYPE(, FWindDebugShaderVS, TEXT("/Plugin/Foo/Private/ComputeShader/Debug/WindDebugSamplePlane.usf"), TEXT("MainVS"), SF_Vertex)
-IMPLEMENT_SHADER_TYPE(, FWindDebugShaderPS, TEXT("/Plugin/Foo/Private/ComputeShader/Debug/WindDebugSamplePlane.usf"), TEXT("MainPS"), SF_Pixel)
+IMPLEMENT_SHADER_TYPE(, FWindDebugXYZAxisShaderVS, TEXT("/Plugin/Foo/Private/ComputeShader/Debug/WindDebugXYZAxis.usf"), TEXT("MainVS"), SF_Vertex)
+IMPLEMENT_SHADER_TYPE(, FWindDebugXYZAxisShaderPS, TEXT("/Plugin/Foo/Private/ComputeShader/Debug/WindDebugXYZAxis.usf"), TEXT("MainPS"), SF_Pixel)
 
-// IMPLEMENT_SHADER_TYPE(, FWindDebugShaderVS, TEXT("/Plugin/Foo/Private/TestShader/MyColorShader.usf"), TEXT("MainVS"), SF_Vertex)
-// IMPLEMENT_SHADER_TYPE(, FWindDebugShaderPS, TEXT("/Plugin/Foo/Private/TestShader/MyColorShader.usf"), TEXT("MainPS"), SF_Pixel)
+IMPLEMENT_SHADER_TYPE(, FWindDebugTex3DShaderVS, TEXT("/Plugin/Foo/Private/ComputeShader/Debug/WindDebugTex3D.usf"), TEXT("MainVS"), SF_Vertex)
+IMPLEMENT_SHADER_TYPE(, FWindDebugTex3DShaderPS, TEXT("/Plugin/Foo/Private/ComputeShader/Debug/WindDebugTex3D.usf"), TEXT("MainPS"), SF_Pixel)
+
+// IMPLEMENT_SHADER_TYPE(, FWindDebugXYZAxisShaderVS, TEXT("/Plugin/Foo/Private/TestShader/MyColorShader.usf"), TEXT("MainVS"), SF_Vertex)
+// IMPLEMENT_SHADER_TYPE(, FWindDebugXYZAxisShaderPS, TEXT("/Plugin/Foo/Private/TestShader/MyColorShader.usf"), TEXT("MainPS"), SF_Pixel)
 
 FWindDebugShaderBase::FWindDebugShaderBase(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
 	: FGlobalShader(Initializer)

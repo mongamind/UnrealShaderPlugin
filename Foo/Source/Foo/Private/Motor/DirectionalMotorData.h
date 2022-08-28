@@ -18,7 +18,7 @@ public:
 BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FDirectionalMotorUniformData, )
 	SHADER_PARAMETER(uint32,NumMotors)
 	SHADER_PARAMETER(float,MaxVelocity)
-	SHADER_PARAMETER(float,TexelsPerMeter)
+	SHADER_PARAMETER(FVector,MetersPerTexel)
 	SHADER_PARAMETER(FVector,InPlayerWorldSpacePos)
 	SHADER_PARAMETER_ARRAY(float,MotorRadius, [64])
 	SHADER_PARAMETER_ARRAY(FVector,MotorWorldSpacePos, [64])
@@ -45,7 +45,7 @@ public:
 		FRHICommandListImmediate& RHICmdList,
 		FVector PlayerWorldPos,
 		float MaxVelocity,
-		float TexelsPermeter,
+		FVector MetersPerTexel,
 		const TArray<FDirectionalMotorParam*>& AllWindMotors,
 		FUnorderedAccessViewRHIRef WindDiffusionXAxisTexture_UAV,
 		FShaderResourceViewRHIRef WindDiffusionXAxisTexture_SRV,

@@ -25,7 +25,7 @@ private:
 					ERHIFeatureLevel::Type FeatureLevel,
 					FVector PlayerWorldPos,
 					float MaxVelocity,
-					float TexelsPerMeter,
+					FVector MetersPerTexel,
 					const TArray<FWindMotorBaseParamBase*>& AllWindMotors,
 					FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
 
@@ -34,7 +34,7 @@ private:
 				ERHIFeatureLevel::Type FeatureLevel,
 				FVector PlayerWorldPos,
 				float MaxVelocity,
-				float TexelsPerMeter,
+				FVector MetersPerTexel,
 				const TArray<class FDirectionalMotorParam*>& AllWindMotors,
 				FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
 
@@ -43,7 +43,7 @@ private:
 			ERHIFeatureLevel::Type FeatureLevel,
 			FVector PlayerWorldPos,
 			float MaxVelocity,
-			float TexelsPerMeter,
+			FVector MetersPerTexel,
 			const TArray<class FSphereMotorParam*>& AllWindMotors,
 			FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
 
@@ -52,7 +52,7 @@ private:
 			ERHIFeatureLevel::Type FeatureLevel,
 			FVector PlayerWorldPos,
 			float MaxVelocity,
-			float TexelsPerMeter,
+			FVector MetersPerTexel,
 			const TArray<class FVortexMotorParam*>& AllWindMotors,
 			FWindVelocityTextures* WindVelocityTexturesDoubleBuffer);
 };

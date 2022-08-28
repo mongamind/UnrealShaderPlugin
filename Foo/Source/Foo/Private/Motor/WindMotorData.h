@@ -32,7 +32,7 @@ struct FWindMotorParamData
 	TArray<FWindMotorBaseParamBase*> AllWindMotors;
 	FVector PlayerWorldPos;
 	float MaxVelocity;
-	float TexelsPerMeter;
+	FVector MetersPerTexel;
 	FWindVelocityTextures* WindVelocityTexturesDoubleBuffer;
 };
 
