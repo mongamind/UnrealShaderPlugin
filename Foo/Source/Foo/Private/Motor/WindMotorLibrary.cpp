@@ -42,9 +42,9 @@ void UWindMotorLibrary::ApplyWindMotors_RenderThread(
 		}
 	}
 
-	WindVelocityTexturesDoubleBuffer->ClearCurXAxisUAVToBlack(RHICmdList);
-	WindVelocityTexturesDoubleBuffer->ClearCurYAxisUAVToBlack(RHICmdList);
-	WindVelocityTexturesDoubleBuffer->ClearCurZAxisUAVToBlack(RHICmdList);
+	// WindVelocityTexturesDoubleBuffer->ClearCurXAxisUAVToBlack(RHICmdList);
+	// WindVelocityTexturesDoubleBuffer->ClearCurYAxisUAVToBlack(RHICmdList);
+	// WindVelocityTexturesDoubleBuffer->ClearCurZAxisUAVToBlack(RHICmdList);
 
 	if(AllDirectionalMotors.Num() > 0)
 	{
