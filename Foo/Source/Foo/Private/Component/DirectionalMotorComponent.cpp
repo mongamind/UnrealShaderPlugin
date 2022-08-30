@@ -18,6 +18,11 @@ class FWindMotorBaseParamBase* UDirectionalMotorComponent::GetWindMotorParam()
 {
 	GetWindMotorParamInternal(&DirctionalWindParam);
 
+	FVector NormalizeDir = GetOwner()->GetActorForwardVector();
+	NormalizeDir.Normalize();
+	DirctionalWindParam.Direction = NormalizeDir;
+	DirctionalWindParam.Distance = Distance;
+
 	return &DirctionalWindParam;
 }
 

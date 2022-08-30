@@ -61,6 +61,9 @@ void FDirectionalMotorShader::SetParameters(
 			UniformData.MotorWorldSpacePos[index] = MotorParam->MotorWorldSpacePos;
 			UniformData.MotorWindVelocity[index] = MotorParam->WindVelocity;
 			UniformData.MotorRadius[index] = MotorParam->Radius;
+
+			UniformData.MotorDir[index] = MotorParam->Direction;
+			UniformData.MotorDis[index] = MotorParam->Distance;
 		}
 		
 		UniformData.NumMotors = AllWindMotors.Num();

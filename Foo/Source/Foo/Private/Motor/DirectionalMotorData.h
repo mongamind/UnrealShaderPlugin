@@ -12,6 +12,9 @@ class FDirectionalMotorParam : public FWindMotorBaseParamBase
 public:
 	virtual ~FDirectionalMotorParam() override{}
 	virtual EWindMotorType GetWindMotorType() const override {return WMT_Directional;};
+
+	FVector Direction;
+	float Distance;								//wind drag force
 };
 
 
@@ -20,7 +23,9 @@ BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FDirectionalMotorUniformData, )
 	SHADER_PARAMETER(float,MaxVelocity)
 	SHADER_PARAMETER(FVector,MetersPerTexel)
 	SHADER_PARAMETER(FVector,InPlayerWorldSpacePos)
+	SHADER_PARAMETER_ARRAY(float,MotorDis, [64])
 	SHADER_PARAMETER_ARRAY(float,MotorRadius, [64])
+	SHADER_PARAMETER_ARRAY(FVector,MotorDir, [64])
 	SHADER_PARAMETER_ARRAY(FVector,MotorWorldSpacePos, [64])
 	SHADER_PARAMETER_ARRAY(FVector,MotorWindVelocity, [64])
 END_GLOBAL_SHADER_PARAMETER_STRUCT()

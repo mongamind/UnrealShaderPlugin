@@ -51,25 +51,26 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
     OutXAxisTexture.GetDimensions(SizeX,SizeY,SizeZ);
     
     uint3 GridPlayerPos = uint3(SizeX * 0.5f,SizeZ * 0.5f,SizeY * 0.5f);
-
+    float3 PlayerWorldPos = VortexMotorData.InPlayerWorldSpacePos;
+    float MetersPerTexel = VortexMotorData.MetersPerTexel;
+    
     for(int y = 0; y < SizeZ;++y)
     {
         uint3 GridPos = uint3(ThreadId.x,y,ThreadId.y);
+        float3 WindVelocityAdditive = float3(0,0,0);
         
-        for(int i = 0;i < VortexMotorData.NumMotors;++i)
+        for(int i = 0;i < VortexMotorData.NumMotors ;++i)
         {
             float3 MotorPos = VortexMotorData.MotorWorldSpacePos[i];
-            float3 Velocity = VortexMotorData.MotorWindVelocity[i];
+            float3 WindVelocity = VortexMotorData.MotorWindVelocity[i];
             float Radius = VortexMotorData.MotorRadius[i];
             
-            float3 GridMotorPos = (MotorPos - VortexMotorData.InPlayerWorldSpacePos) * PosToMeter * DirectionalMotorData.MetersPerTexel + GridPlayerPos;
-            float3 WindVelocity = Velocity;
+            float3 GridMotorPos = (MotorPos - PlayerWorldPos) * PosToMeter * MetersPerTexel  + GridPlayerPos;
             float3 deltaPos = GridPos - GridMotorPos;
             
-            if(length( deltaPos) < Radius)
-            {
-                ModifyVelocityInTexture(GridPos,WindVelocity);
-            }
+            WindVelocityAdditive = WindVelocityAdditive + WindVelocity * ceil(min(1,max(0,Radius - length( deltaPos))));
         }
+
+        ModifyVelocityInTexture(GridPos,WindVelocityAdditive);
     }
 }

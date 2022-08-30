@@ -24,4 +24,7 @@ public:
 public:
 
 	FDirectionalMotorParam DirctionalWindParam;
+
+	UPROPERTY(EditAnywhere,Category="Wind Simulate",DisplayName="Distance (Meter)")
+	float Distance = 10;
 };
