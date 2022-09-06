@@ -1,0 +1,77 @@
+// Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
+
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/Common.ush"
+
+// #define XAxisTexel 32
+// #define YAxisTexel 16
+// #define ZAxisTexel 32
+#define WINDTEX3D_ZLAYER_COUNT 16
+#define MotorDataMaxCount 64
+#define PosToMeter 0.01f
+
+Texture3D<float> InXAxisTexture;  //texture for special dimension (x or y or z)
+Texture3D<float> InYAxisTexture;  //texture for special dimension (x or y or z)
+Texture3D<float> InZAxisTexture;  //texture for special dimension (x or y or z)
+
+// FSphereMotorUniformData
+// {
+//     uint NumMotors;
+//     float MaxVelocity;
+//     float3 MetersPerTexel;
+//     float3 InPlayerWorldSpacePos;
+//     float MotorRadius[MotorDataMaxCount];
+//     float3 MotorWorldSpacePos[MotorDataMaxCount];
+//     float3 MotorWindVelocity[MotorDataMaxCount];
+// }
+// FSphereMotorUniformData SphereMotorData;
+
+
+RWTexture3D<float> OutXAxisTexture;
+RWTexture3D<float> OutYAxisTexture;
+RWTexture3D<float> OutZAxisTexture;
+
+float LimitInMaxVelocity(float Velocity)
+{
+    return max(min(Velocity,SphereMotorData.MaxVelocity),-SphereMotorData.MaxVelocity);
+}
+
+
+void ModifyVelocityInTexture(uint3 GridPos,float3 WindVelocity)
+{
+    OutXAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(InXAxisTexture[GridPos.xzy] + WindVelocity.x);//InXAxisTexture[GridPos.xzy] + WindVelocity.x;
+    OutYAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(InYAxisTexture[GridPos.xzy] + WindVelocity.y);//InYAxisTexture[GridPos.xzy] + WindVelocity.y;
+    OutZAxisTexture[GridPos.xzy] =  LimitInMaxVelocity(InZAxisTexture[GridPos.xzy] + WindVelocity.z);//InZAxisTexture[GridPos.xzy] + WindVelocity.z;
+}
+
+[numthreads(32,32,1)]
+void MainCS(uint3 ThreadId : SV_DispatchThreadID)
+{
+    float SizeX,SizeY,SizeZ;
+    OutXAxisTexture.GetDimensions(SizeX,SizeY,SizeZ);
+    
+    uint3 GridPlayerPos = uint3(SizeX * 0.5f,SizeZ * 0.5f,SizeY * 0.5f);
+
+    float3 PlayerWorldPos = SphereMotorData.InPlayerWorldSpacePos;
+    float MetersPerTexel = SphereMotorData.MetersPerTexel;
+    
+    for(int y = 0; y < WINDTEX3D_ZLAYER_COUNT;++y)
+    {
+        uint3 GridPos = uint3(ThreadId.x,y,ThreadId.y);
+        float3 WindVelocityAdditive = float3(0,0,0);
+        
+        for(int i = 0;i < SphereMotorData.NumMotors ;++i)
+        {
+            float3 MotorPos = SphereMotorData.MotorWorldSpacePos[i];
+            float3 WindVelocity = SphereMotorData.MotorWindVelocity[i];
+            float Radius = SphereMotorData.MotorRadius[i];
+            
+            float3 GridMotorPos = (MotorPos - PlayerWorldPos) * PosToMeter * MetersPerTexel  + GridPlayerPos;
+            float3 deltaPos = GridPos - GridMotorPos;
+            
+            WindVelocityAdditive = WindVelocityAdditive + WindVelocity * ceil(min(1,max(0,Radius - length( deltaPos))));
+        }
+
+        ModifyVelocityInTexture(GridPos,WindVelocityAdditive);
+    }
+}
