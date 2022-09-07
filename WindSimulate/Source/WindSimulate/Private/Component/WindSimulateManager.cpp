@@ -7,6 +7,7 @@
 #include "Diffusion/WindDiffusionLibrary.h"
 #include "Motor/WindMotorLibrary.h"
 #include "Engine/World.h"
+#include "Export/WindExportLibrary.h"
 
 UWindSimulateManager* UWindSimulateManager::s_Instance = nullptr;
 
@@ -134,13 +135,11 @@ void UWindSimulateManager::Tick( float DeltaTime )
 		UWindMotorLibrary::ApplyWindMotors(GetWorld(),WindMotorData);
 	}
 #pragma endregion Apply Motors
-//
-// #pragma region readback to cpu
-// 	if(WindDebugArrowsRegistered.Num() > 0 && ReadBackPBO.IsValid())
-// 	{
-// 		UWindReadBackLibrary::ReadBackURVTextures(GetWorld(),&WindVelocityTextureBuffer,ReadBackPBO.Get());
-// 	}
-// #pragma endregion 
+
+#pragma region readback to cpu
+	if (PlayerHoldComponent->ExportLUT)
+		UWindExportLibrary::ExportWindTextures(GetWorld(),&WindVelocityTextureBuffer,PlayerHoldComponent->ExportLUT);
+#pragma endregion 
 }
 
 TStatId UWindSimulateManager::GetStatId() const

@@ -1,0 +1,41 @@
+// Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
+
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/Common.ush"
+
+#define WINDTEX3D_ZLAYER_COUNT 16
+#define WINDTEX3D_ZLAYER_COUNT 16
+#define EXPORTWINDTEX_LUT_XCOUNT 4			//LUT 4x4
+#define EXPORTWINDTEX_LUT_YCOUNT 4			//LUT 4x4
+#define LUT_PADDING 2
+
+Texture3D<float> InWindDiffusionXAxisTexture;  //texture for special dimension (x or y or z)
+Texture3D<float> InWindDiffusionYAxisTexture;  //texture for special dimension (x or y or z)
+Texture3D<float> InWindDiffusionZAxisTexture;  //texture for special dimension (x or y or z)
+
+void MainVS(
+	in float4 InPosition : ATTRIBUTE0,
+	in float2 InUV : ATTRIBUTE1,
+	out float2 OutUV : TEXCOORD0,
+	out float4 OutPosition : SV_POSITION
+	)
+{
+	OutPosition = InPosition;
+	OutUV = InUV;
+}
+
+void MainPS(
+	in float2 UV : TEXCOORD0,
+	out float4 OutColor : SV_Target0
+	)
+{
+	float SizeX,SizeY,SizeZ;
+	InWindDiffusionXAxisTexture.GetDimensions(SizeX,SizeY,SizeZ);
+	
+	float2 UVLUT =  UV * float2(EXPORTWINDTEX_LUT_XCOUNT ,EXPORTWINDTEX_LUT_YCOUNT);   //4x4 LUT
+	uint3 GridPos = uint3(frac(UVLUT.x) * (SizeX + LUT_PADDING) - (0.5 * LUT_PADDING),frac(UVLUT.y) * (SizeY + LUT_PADDING) - (0.5 * LUT_PADDING), (uint)UVLUT.x +  (uint)UVLUT.y * EXPORTWINDTEX_LUT_XCOUNT);
+	float Red = InWindDiffusionXAxisTexture[GridPos];
+	float Green = InWindDiffusionYAxisTexture[GridPos];
+	float Blue = InWindDiffusionZAxisTexture[GridPos];
+	OutColor = float4(Red,Green,Blue,1.0f) ;
+}

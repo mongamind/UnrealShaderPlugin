@@ -40,7 +40,11 @@ private:
 	float OriginalAlpha = 0.9f;
 	UPROPERTY(EditAnywhere,Category="Wind Simulate")
 	float BetaNearAdd = 0.14f;
-
+	
 	bool bIsFirstRecord = true;
 	FVector PosLastRecord;
+	
+public:
+	UPROPERTY(EditAnywhere,Category="Wind Simulate")
+	UTextureRenderTarget2D* ExportLUT;
 };
