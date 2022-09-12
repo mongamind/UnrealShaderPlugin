@@ -3,7 +3,7 @@
 
 #include "Component/WindCenterComponent.h"
 #include "Component/WindMotorBaseComponent.h"
-#include "Component/WindSimulateManager.h"
+#include "Manager/WindSimulateManager.h"
 
 #include "Diffusion/WindDiffusionLibrary.h"
 #include "Motor/WindMotorLibrary.h"

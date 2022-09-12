@@ -24,16 +24,9 @@ protected:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void ConstructArrows();
-	UStaticMeshComponent* GetArrowWithGridPos(int InX,int InY,int InZ);
+	UPROPERTY(BlueprintReadWrite,EditAnywhere)
+	UTextureRenderTarget2D* WindExportRT;
 
 	UPROPERTY(BlueprintReadWrite,EditAnywhere)
-	UStaticMesh* ArrowMesh;
-
-	UPROPERTY(BlueprintReadWrite,EditAnywhere)
-	UMaterial* ArrowMaterial;
-
-
-	UPROPERTY(BlueprintReadWrite,Transient)
-	TArray<UStaticMeshComponent*> AllArrows;
+	FLinearColor ArrowColor = FLinearColor::Gray;
 };

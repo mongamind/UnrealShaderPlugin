@@ -50,7 +50,9 @@ void UWindMotorLibrary::ApplyWindMotors_RenderThread(
 	{
 		ApplyDirectionWindMotors_RenderThread(RHICmdList,FeatureLevel,PlayerWorldPos,MaxVelocity,
 												MetersPerTexel,AllDirectionalMotors,WindVelocityTexturesDoubleBuffer);
-	
+
+		
+		
 		WindVelocityTexturesDoubleBuffer->SwapAllBuffer();
 	}
 	

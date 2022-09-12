@@ -75,7 +75,7 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
         valNew = max(-WindVelocityData.InMaxWindVelocity,min(WindVelocityData.InMaxWindVelocity,valNew));
 
         // valNew = valOrignal + 0.5;
-        // WriteWindVelocityToTexture(GridPos,valNew);
-        WriteWindVelocityToTexture(GridPos,1);
+        WriteWindVelocityToTexture(GridPos,valNew);
+        // WriteWindVelocityToTexture(GridPos,1);
     }
 }

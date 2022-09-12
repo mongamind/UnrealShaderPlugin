@@ -32,7 +32,8 @@ public:
 	{
 		WindDiffusionXAxisTexture.Bind(Initializer.ParameterMap, TEXT("InWindDiffusionXAxisTexture"));
 		WindDiffusionYAxisTexture.Bind(Initializer.ParameterMap, TEXT("InWindDiffusionYAxisTexture"));
-		WindDiffusionYAxisTexture.Bind(Initializer.ParameterMap, TEXT("InWindDiffusionZAxisTexture"));
+		WindDiffusionZAxisTexture.Bind(Initializer.ParameterMap, TEXT("InWindDiffusionZAxisTexture"));
+		// MaxWindVolecity.Bind(Initializer.ParameterMap, TEXT("InMaxWindVolecity"));
 	}
 
 	template<typename TShaderRHIParamRef>
@@ -41,11 +42,14 @@ public:
 		const TShaderRHIParamRef ShaderRHI,
 		FShaderResourceViewRHIRef WindDiffusionXAxisTexture_SRV,
 		FShaderResourceViewRHIRef WindDiffusionYAxisTexture_SRV,
-		FShaderResourceViewRHIRef WindDiffusionZAxisTexture_SRV)
+		FShaderResourceViewRHIRef WindDiffusionZAxisTexture_SRV/*,
+		float InMaxWindVolecity*/)
 	{
 		SetSRVParameter(RHICmdList,ShaderRHI,WindDiffusionXAxisTexture,WindDiffusionXAxisTexture_SRV);
 		SetSRVParameter(RHICmdList,ShaderRHI,WindDiffusionYAxisTexture,WindDiffusionYAxisTexture_SRV);
 		SetSRVParameter(RHICmdList,ShaderRHI,WindDiffusionZAxisTexture,WindDiffusionZAxisTexture_SRV);
+
+		// SetShaderValue(RHICmdList,ShaderRHI,MaxWindVolecity,InMaxWindVolecity);
 	}
 
 private:
@@ -53,6 +57,7 @@ private:
 	LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionXAxisTexture);
 	LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionYAxisTexture);
 	LAYOUT_FIELD(FShaderResourceParameter, WindDiffusionZAxisTexture);
+	// LAYOUT_FIELD(FShaderParameter, MaxWindVolecity);
 };
 
 struct FWindExportVertex

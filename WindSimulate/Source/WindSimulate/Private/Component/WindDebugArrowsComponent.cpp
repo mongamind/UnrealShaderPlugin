@@ -2,11 +2,18 @@
 
 
 #include "Component/WindDebugArrowsComponent.h"
-#include "Component/WindSimulateManager.h"
 
-#define XAsixCount int(32 * 0.5)
-#define YAsixCount int(16 * 0.5)
-#define ZAsixCount int(32 * 0.5)
+#include "Kismet/KismetArrayLibrary.h"
+#include "Manager/WindSimulateManager.h"
+#include "Kismet/KismetSystemLibrary.h"
+
+#define XAsixCount 32
+#define YAsixCount 16
+#define ZAsixCount 32
+
+#define LUT_COLUMN_COUNT 4
+#define LUT_PADDING 2
+#define VolecityDisplayRate 1
 
 // Sets default values for this component's properties
 UWindDebugArrowsComponent::UWindDebugArrowsComponent()
@@ -28,8 +35,6 @@ void UWindDebugArrowsComponent::BeginPlay()
 	UWindSimulateManager* SimulateMgr = UWindSimulateManager::GetInstance(this);
 	if(SimulateMgr)
 		SimulateMgr->RegisterWindDebugArrowsComponent(this);
-
-	ConstructArrows();
 }
 
 void UWindDebugArrowsComponent::BeginDestroy()
@@ -41,62 +46,61 @@ void UWindDebugArrowsComponent::BeginDestroy()
 		SimulateMgr->UnregisterWindDebugArrowsComponent(this);
 }
 
+PRAGMA_DISABLE_OPTIMIZATION
 void UWindDebugArrowsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	AActor* Actor = GetOwner();
-	FVector ActorLocation = Actor->GetActorLocation();
-	ActorLocation = FVector(int(ActorLocation.X / 100) * 100, int(ActorLocation.Y / 100) * 100, int(ActorLocation.Z / 100) * 100);
-	for(int X = 0;X < XAsixCount;X++)
+	AActor* OwnerActor = GetOwner();
+	UWindSimulateManager* SimulateMgr = UWindSimulateManager::GetInstance(this);
+	if(SimulateMgr && OwnerActor)
 	{
-		for(int Y = 0;Y < YAsixCount;Y++)
+		SimulateMgr->RefreshExportData();
+
+		float MaxWindVelocity = SimulateMgr->GetMaxWindVelocity();
+
+		FVector WorldPos = OwnerActor->GetActorLocation();
+
+		// FVector2D RealPixelRate(XAsixCount / (XAsixCount + LUT_PADDING),ZAsixCount / (ZAsixCount + LUT_PADDING));
+		
+		const FFloat16ColorArrayWrapper& ExportData = SimulateMgr->GetExportData();
+		if(ExportData.bIsSuccessed)
 		{
-			for(int Z = 0;Z < ZAsixCount;Z++)
+			for(int X = 0;X < XAsixCount;X++)
 			{
-				UStaticMeshComponent* ArrowComp = GetArrowWithGridPos(X,Y,Z);
-				if(ArrowComp)
+				for(int Y = 0;Y < YAsixCount;Y++)
 				{
-					ArrowComp->SetWorldLocation(ActorLocation + FVector((X - XAsixCount * 0.5) * 100,(Y - YAsixCount * 0.5) * 100,(Z - ZAsixCount * 0.5) * 100));
-					ArrowComp->SetWorldRotation(FRotator::ZeroRotator);
+					for(int Z = 0;Z < ZAsixCount;Z++)
+			
+			// for(int X = XAsixCount * 0.5 - 1;X < XAsixCount * 0.5 + 1;X++)
+			// {
+			// 	for(int Y = YAsixCount * 0.5 - 1;Y < YAsixCount * 0.5 + 1;Y++)
+			// 	{
+			// 		for(int Z = ZAsixCount * 0.5;Z < ZAsixCount * 0.5 + 1;Z++)
+					{
+						int LayerIndexX = Y % LUT_COLUMN_COUNT;
+						int LayerIndexY = Y / LUT_COLUMN_COUNT;
+						int xIndex = X + LayerIndexX * XAsixCount;
+						int yIndex = Z + LayerIndexY * ZAsixCount ;
+
+						
+						int DataIndex = ExportData.GetIndex(xIndex,yIndex);
+
+						FVector WindVelocity = ExportData.Color(DataIndex);
+
+						// UE_LOG(LogTemp,Log,TEXT("X:%d Y:%d Z:%d LayerIndex.X:%d LayerIndex.Y:%d DataIndex:%d WindVelocity:%f,%f,%f "),X,Y,Z,LayerIndexX,LayerIndexY,DataIndex,WindVelocity.X,WindVelocity.Y,WindVelocity.Z);
+
+						FVector PosStart =  WorldPos + FVector((X - XAsixCount * 0.5f) * 100,(Y - YAsixCount * 0.5f) * 100,(Z - ZAsixCount * 0.5f) * 100);
+
+						FVector VectorNormalize = WindVelocity.GetSafeNormal();
+						FVector PosEnd = PosStart + (VectorNormalize + WindVelocity) * VolecityDisplayRate;
+						
+						
+						UKismetSystemLibrary::DrawDebugLine(GetWorld(),PosStart,PosEnd,ArrowColor);
+						UKismetSystemLibrary::DrawDebugArrow(GetWorld(),PosStart,PosEnd,10,ArrowColor);
+					}
 				}
 			}
 		}
 	}
 }
 
-void UWindDebugArrowsComponent::ConstructArrows()
-{
-	AActor* Actor = GetOwner();
-	FVector ActorLocation = Actor->GetActorLocation();
-	ActorLocation = FVector(int(ActorLocation.X / 100) * 100, int(ActorLocation.Y / 100) * 100, int(ActorLocation.Z / 100) * 100);
-	for(int X = 0;X < XAsixCount;X++)
-	{
-		for(int Y = 0;Y < YAsixCount;Y++)
-		{
-			for(int Z = 0;Z < ZAsixCount;Z++)
-			{
-				UStaticMeshComponent* Arrow = NewObject<UStaticMeshComponent>(Actor,UStaticMeshComponent::StaticClass());
-				Actor->AddInstanceComponent(Arrow);
-				Arrow->AttachToComponent(Actor->GetRootComponent(),FAttachmentTransformRules::KeepRelativeTransform);
-				Arrow->RegisterComponent();
-				Arrow->SetWorldLocation(ActorLocation + FVector((X - XAsixCount * 0.5) * 100,(Y - YAsixCount * 0.5) * 100,(Z - ZAsixCount * 0.5) * 100));
-				Arrow->SetWorldRotation(FRotator::ZeroRotator);
-				Arrow->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				
-				Arrow->SetStaticMesh(ArrowMesh);
-
-				
-				
-				AllArrows.Add(Arrow);
-			}
-		}
-	}
-}
-
-UStaticMeshComponent* UWindDebugArrowsComponent::GetArrowWithGridPos(int InX,int InY,int InZ)
-{
-	int Index = InX * (YAsixCount * ZAsixCount) + InY * ZAsixCount + InZ;
-	if(AllArrows.IsValidIndex(Index))
-		return AllArrows[Index];
-
-	return nullptr;
-}
+PRAGMA_ENABLE_OPTIMIZATION

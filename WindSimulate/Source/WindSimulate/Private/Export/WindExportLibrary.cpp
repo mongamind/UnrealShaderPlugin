@@ -11,9 +11,12 @@ TGlobalResource<FWindExportVertexBuffer> g_WindExportVertexBuffer;
 TGlobalResource<FWindExportIndexBuffer> g_WindExportIndexBuffer;
 
 void UWindExportLibrary::ExportWindTextures_RenderThread(FRHICommandListImmediate& RHICmdList,
-			ERHIFeatureLevel::Type FeatureLevel,
-			struct FWindVelocityTextures* WindVelocityTextures,
-			FTextureRenderTargetResource* OutTextureRenderTargetResource)
+		ERHIFeatureLevel::Type FeatureLevel,
+		FShaderResourceViewRHIRef TextureXAxisRHI,
+		FShaderResourceViewRHIRef TextureYAxisRHI,
+		FShaderResourceViewRHIRef TextureZAxisRHI,
+		FTextureRenderTargetResource* OutTextureRenderTargetResource/*,
+		float InMaxWindVelocity*/)
 {
 		check(IsInRenderingThread());
 
@@ -51,9 +54,10 @@ void UWindExportLibrary::ExportWindTextures_RenderThread(FRHICommandListImmediat
 		// Update shader uniform parameters.
 		// VertexShader->SetParameters(RHICmdList, VertexShader.GetVertexShader(), CompiledCameraModel, DisplacementMapResolution);
 		PixelShader->SetParameters(RHICmdList, PixelShader.GetPixelShader(),
-										WindVelocityTextures->GetCurXAxisSRV(),
-										WindVelocityTextures->GetCurYAxisSRV(),
-										WindVelocityTextures->GetCurZAxisSRV());
+										TextureXAxisRHI,
+										TextureYAxisRHI,
+										TextureZAxisRHI/*,
+										InMaxWindVelocity*/);
 
 		// Draw grid.
 		RHICmdList.SetStreamSource(0,g_WindExportVertexBuffer.VertexBufferRHI,0);
@@ -66,7 +70,8 @@ void UWindExportLibrary::ExportWindTextures_RenderThread(FRHICommandListImmediat
 void UWindExportLibrary::ExportWindTextures(
 		const UObject* WorldContextObject,
 		struct FWindVelocityTextures* WindVelocityTextures,
-		class UTextureRenderTarget2D* OutputRenderTarget)
+		class UTextureRenderTarget2D* OutputRenderTarget/*,
+		float InMaxWindVelocity*/)
 {
 	check(IsInGameThread());
 	
@@ -74,10 +79,13 @@ void UWindExportLibrary::ExportWindTextures(
 	
 	ERHIFeatureLevel::Type FeatureLevel = World->Scene->GetFeatureLevel();
 	FTextureRenderTargetResource* TextureRenderTargetReource  = OutputRenderTarget->GameThread_GetRenderTargetResource();
+	FShaderResourceViewRHIRef TextureXAxisRHI = WindVelocityTextures->GetCurXAxisSRV();
+	FShaderResourceViewRHIRef TextureYAxisRHI = WindVelocityTextures->GetCurYAxisSRV();
+	FShaderResourceViewRHIRef TextureZAxisRHI = WindVelocityTextures->GetCurZAxisSRV();
 	ENQUEUE_RENDER_COMMAND(CaptureCommand)(
-		[FeatureLevel,WindVelocityTextures,TextureRenderTargetReource](FRHICommandListImmediate& RHICmdList)
+		[FeatureLevel,TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI,TextureRenderTargetReource/*,InMaxWindVelocity*/](FRHICommandListImmediate& RHICmdList)
 		{
-			ExportWindTextures_RenderThread(RHICmdList,FeatureLevel,WindVelocityTextures,TextureRenderTargetReource);
+			ExportWindTextures_RenderThread(RHICmdList,FeatureLevel,TextureXAxisRHI,TextureYAxisRHI,TextureZAxisRHI,TextureRenderTargetReource/*,InMaxWindVelocity*/);
 		}
 	);
 }

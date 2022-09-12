@@ -12,7 +12,7 @@
 #include "Engine/AssetManager.h"
 #include "Engine/EngineTypes.h"
 #include "Debug/WindDebugLibrary.h"
-#include "Component/WindSimulateManager.h"
+#include "Manager/WindSimulateManager.h"
 
 
 // Sets default values for this component's properties

@@ -5,7 +5,7 @@
 
 #include "Component/WindCenterComponent.h"
 #include "GameFramework/Actor.h"
-#include "Component/WindSimulateManager.h"
+#include "Manager/WindSimulateManager.h"
 #include "Engine/World.h"
 
 

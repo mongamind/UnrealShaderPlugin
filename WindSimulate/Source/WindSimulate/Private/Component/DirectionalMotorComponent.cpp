@@ -14,6 +14,7 @@ UDirectionalMotorComponent::UDirectionalMotorComponent()
 	// ...
 }
 
+PRAGMA_DISABLE_OPTIMIZATION
 class FWindMotorBaseParamBase* UDirectionalMotorComponent::GetWindMotorParam()
 {
 	GetWindMotorParamInternal(&DirctionalWindParam);
@@ -25,4 +26,5 @@ class FWindMotorBaseParamBase* UDirectionalMotorComponent::GetWindMotorParam()
 
 	return &DirctionalWindParam;
 }
+PRAGMA_ENABLE_OPTIMIZATION
 

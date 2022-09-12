@@ -13,6 +13,8 @@ Texture3D<float> InWindDiffusionXAxisTexture;  //texture for special dimension (
 Texture3D<float> InWindDiffusionYAxisTexture;  //texture for special dimension (x or y or z)
 Texture3D<float> InWindDiffusionZAxisTexture;  //texture for special dimension (x or y or z)
 
+float MaxWindVolecity;
+
 void MainVS(
 	in float4 InPosition : ATTRIBUTE0,
 	in float2 InUV : ATTRIBUTE1,
@@ -33,9 +35,20 @@ void MainPS(
 	InWindDiffusionXAxisTexture.GetDimensions(SizeX,SizeY,SizeZ);
 	
 	float2 UVLUT =  UV * float2(EXPORTWINDTEX_LUT_XCOUNT ,EXPORTWINDTEX_LUT_YCOUNT);   //4x4 LUT
-	uint3 GridPos = uint3(frac(UVLUT.x) * (SizeX + LUT_PADDING) - (0.5 * LUT_PADDING),frac(UVLUT.y) * (SizeY + LUT_PADDING) - (0.5 * LUT_PADDING), (uint)UVLUT.x +  (uint)UVLUT.y * EXPORTWINDTEX_LUT_XCOUNT);
+	float2 UVInner = float2(frac(UVLUT.x),frac(UVLUT.y));
+	uint ZLayer = (uint)UVLUT.y +  (uint)UVLUT.x * EXPORTWINDTEX_LUT_XCOUNT;
+
+	
+	uint3 GridPos = uint3(UVInner.x * SizeX,UVInner.y * SizeY, ZLayer);
+
+	// float Border = ceil(max(0,(UVInner.x - 0.5 * LUT_PADDING / (SizeX + LUT_PADDING)))) * ceil(max(0,(UVInner.y - 0.5 * LUT_PADDING / (SizeZ + LUT_PADDING)))); 
+
+	
+	
 	float Red = InWindDiffusionXAxisTexture[GridPos];
 	float Green = InWindDiffusionYAxisTexture[GridPos];
 	float Blue = InWindDiffusionZAxisTexture[GridPos];
-	OutColor = float4(Red,Green,Blue,1.0f) ;
+	
+	OutColor = float4(Red  ,Green ,Blue  ,1.0f) ;
+	// OutColor = float4( Red * Border ,Green * Border + (1 - Border),Blue * Border  ,1.0f) ;
 }

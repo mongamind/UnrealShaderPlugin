@@ -18,14 +18,18 @@ public:
 	static void ExportWindTextures(
 		const UObject* WorldContextObject,
 		struct FWindVelocityTextures* WindVelocityTextures,
-		class UTextureRenderTarget2D* OutputRenderTarget
+		class UTextureRenderTarget2D* OutputRenderTarget/*,
+		float InMaxWindVelocity*/
 		);
 
 private:
 	static void ExportWindTextures_RenderThread(FRHICommandListImmediate& RHICmdList,
 			ERHIFeatureLevel::Type FeatureLevel,
-			struct FWindVelocityTextures* WindVelocityTextures,
-			FTextureRenderTargetResource* OutTextureRenderTargetResource);
+			FShaderResourceViewRHIRef TextureXAxisRHI,
+			FShaderResourceViewRHIRef TextureYAxisRHI,
+			FShaderResourceViewRHIRef TextureZAxisRHI,
+			FTextureRenderTargetResource* OutTextureRenderTargetResource/*,
+			float InMaxWindVelocity*/);
 };
 
 
