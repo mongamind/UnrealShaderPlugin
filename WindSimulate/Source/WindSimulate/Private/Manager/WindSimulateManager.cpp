@@ -3,7 +3,7 @@
 
 #include "Manager/WindSimulateManager.h"
 #include "Component/WindCenterComponent.h"
-#include "Component/WindMotorBaseComponent.h"
+#include "Component/Motor/WindMotorBaseComponent.h"
 #include "Diffusion/WindDiffusionLibrary.h"
 #include "Motor/WindMotorLibrary.h"
 #include "Engine/World.h"
@@ -63,22 +63,12 @@ void UWindSimulateManager::UnsetPlayerHoldComponent(class UWindCenterComponent* 
 
 void UWindSimulateManager::RegisterWindDebugArrowsComponent(class UWindDebugArrowsComponent* MotorComponent)
 {
-	WindDebugArrowsRegistered.Add(MotorComponent);
-	if (!ReadBackPBO.IsValid())
-	{
-		// ReadBackPBO = MakeShareable(new FWindPingPongPBO);
-		// ReadBackPBO->Init(32,32,16);
-	}
-		
+	WindDebugArrowsRegistered = MotorComponent;
 }
 
 void UWindSimulateManager::UnregisterWindDebugArrowsComponent(class UWindDebugArrowsComponent* MotorComponent)
 {
-	WindDebugArrowsRegistered.Remove(MotorComponent);
-	if(WindDebugArrowsRegistered.Num() == 0 && ReadBackPBO.IsValid())
-	{
-		ReadBackPBO = nullptr;
-	}
+	WindDebugArrowsRegistered = MotorComponent;
 }
 
 float UWindSimulateManager::GetMaxWindVelocity()
@@ -87,6 +77,18 @@ float UWindSimulateManager::GetMaxWindVelocity()
 		return PlayerHoldComponent->GeMaxWindVelocity();
 	
 	return 1.0f;
+}
+
+FVector UWindSimulateManager::GetWindCenterWorldPos()
+{
+	if(PlayerHoldComponent)
+	{
+		AActor* PlayerActor = PlayerHoldComponent->GetOwner();
+		if (PlayerActor)
+			return PlayerActor->GetActorLocation();
+	}
+	
+	return FVector::ZeroVector;
 }
 
 void UWindSimulateManager::Tick( float DeltaTime )

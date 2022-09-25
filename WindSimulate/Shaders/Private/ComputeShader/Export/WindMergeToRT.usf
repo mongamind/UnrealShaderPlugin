@@ -36,19 +36,21 @@ void MainPS(
 	
 	float2 UVLUT =  UV * float2(EXPORTWINDTEX_LUT_XCOUNT ,EXPORTWINDTEX_LUT_YCOUNT);   //4x4 LUT
 	float2 UVInner = float2(frac(UVLUT.x),frac(UVLUT.y));
-	uint ZLayer = (uint)UVLUT.y +  (uint)UVLUT.x * EXPORTWINDTEX_LUT_XCOUNT;
+	uint ZLayer =  (EXPORTWINDTEX_LUT_XCOUNT - (uint)UVLUT.x - 1) + (uint)UVLUT.y * EXPORTWINDTEX_LUT_XCOUNT;
 
 	
-	uint3 GridPos = uint3(UVInner.x * SizeX,UVInner.y * SizeY, ZLayer);
+	uint3 GridPos = uint3((1 - UVInner.x) * SizeX,(1 - UVInner.y) * SizeY, ZLayer);
 
-	// float Border = ceil(max(0,(UVInner.x - 0.5 * LUT_PADDING / (SizeX + LUT_PADDING)))) * ceil(max(0,(UVInner.y - 0.5 * LUT_PADDING / (SizeZ + LUT_PADDING)))); 
-
-	
+	// float BorderStart = ceil(max(0,(UVInner.x - 0.5 / SizeX ))) * ceil(max(0,(UVInner.y - 0.5 / SizeZ ))); 
+	// float BorderEnd = ceil(1 - min(1,(UVInner.x + 0.5 / SizeX))) * ceil(1 - min(1,(UVInner.y + 0.5 / SizeZ)));
+	//
+	// float Border = BorderStart * BorderEnd;
 	
 	float Red = InWindDiffusionXAxisTexture[GridPos];
 	float Green = InWindDiffusionYAxisTexture[GridPos];
 	float Blue = InWindDiffusionZAxisTexture[GridPos];
 	
 	OutColor = float4(Red  ,Green ,Blue  ,1.0f) ;
-	// OutColor = float4( Red * Border ,Green * Border + (1 - Border),Blue * Border  ,1.0f) ;
+	// OutColor = float4(BorderStart * BorderEnd  ,BorderStart * BorderEnd ,BorderStart * BorderEnd  ,1.0f) ;
+	// OutColor = float4( Red * Border + (1 - Border)  ,Green * Border + (1 - Border),Blue * Border + (1 - Border)  ,1.0f) ;
 }

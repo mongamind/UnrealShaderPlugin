@@ -35,8 +35,10 @@ public:
 
 	void RegisterWindDebugArrowsComponent(class UWindDebugArrowsComponent* MotorComponent);
 	void UnregisterWindDebugArrowsComponent(class UWindDebugArrowsComponent* MotorComponent);
+	UWindDebugArrowsComponent* GetWindDebugArrowsComponent(){return WindDebugArrowsRegistered;}
 
 	float GetMaxWindVelocity();
+	FVector GetWindCenterWorldPos();
 
 	FWindVelocityTextures& GetWindVelocityBuffer(){return WindVelocityTextureBuffer;};
 
@@ -61,7 +63,7 @@ private:
 	class UWindCenterComponent* PlayerHoldComponent;
 
 	UPROPERTY(Transient)
-	TArray<class UWindDebugArrowsComponent*> WindDebugArrowsRegistered;
+	class UWindDebugArrowsComponent* WindDebugArrowsRegistered;
 
 	FFloat16ColorArrayWrapper ExportData;
 
