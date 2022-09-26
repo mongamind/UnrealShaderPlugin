@@ -23,6 +23,7 @@ public:
 public:
 	FVector MotorWorldSpacePos;                  //Min of wind velocity
 	FVector WindVelocity;
+	float WindForce;
 	float Radius = 1;								//wind drag force
 };
 
@@ -30,7 +31,7 @@ public:
 struct FWindMotorParamData
 {
 	TArray<FWindMotorBaseParamBase*> AllWindMotors;
-	FVector PlayerWorldPos;
+	FVector WindCenterWorldPos;
 	float MaxVelocity;
 	FVector MetersPerTexel;
 	FWindVelocityTextures* WindVelocityTexturesDoubleBuffer;

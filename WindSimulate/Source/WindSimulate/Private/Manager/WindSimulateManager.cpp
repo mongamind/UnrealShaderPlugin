@@ -118,7 +118,7 @@ void UWindSimulateManager::Tick( float DeltaTime )
 	
 #pragma region Apply Motors
 	WindMotorData.MaxVelocity = PlayerHoldComponent->GeMaxWindVelocity();
-	WindMotorData.PlayerWorldPos = PlayerActor->GetActorLocation();
+	WindMotorData.WindCenterWorldPos = PlayerActor->GetActorLocation();
 	WindMotorData.MetersPerTexel = PlayerHoldComponent->GetMetersPerTexel();
 	
 	TArray<FWindMotorBaseParamBase*>& MotorParams = WindMotorData.AllWindMotors;

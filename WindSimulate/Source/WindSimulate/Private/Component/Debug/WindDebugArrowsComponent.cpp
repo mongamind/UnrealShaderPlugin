@@ -72,16 +72,16 @@ void UWindDebugArrowsComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		const FFloat16ColorArrayWrapper& ExportData = SimulateMgr->GetExportData();
 		if(ExportData.bIsSuccessed)
 		{
-			// for(int X = 0;X < XAsixCount;X++)
-			// {
-			// 	for(int Y = 0;Y < YAsixCount;Y++)
-			// 	{
-			// 		for(int Z = 0;Z < ZAsixCount;Z++)
-			for(int X = int(XAsixCount / 2)  ;X <= int(XAsixCount / 2) ;X++)
+			for(int X = 0;X < XAsixCount;X++)
 			{
-				for(int Y = int(YAsixCount / 2)  ;Y <= int(YAsixCount / 2) ;Y++)
+				for(int Y = 0;Y < YAsixCount;Y++)
 				{
-					for(int Z = int(ZAsixCount / 2) ;Z <= int(ZAsixCount / 2) ;Z++)
+					for(int Z = 0;Z < ZAsixCount;Z++)
+			// for(int X = int(XAsixCount / 2)  ;X <= int(XAsixCount / 2) ;X++)
+			// {
+			// 	for(int Y = int(YAsixCount / 2)  ;Y <= int(YAsixCount / 2) ;Y++)
+			// 	{
+			// 		for(int Z = int(ZAsixCount / 2) ;Z <= int(ZAsixCount / 2) ;Z++)
 			// for(int X = int(XAsixCount / 2)  ;X <= int(XAsixCount / 2) ;X++)
 			// {
 			// 	for(int Y = int(YAsixCount / 2)  ;Y <= int(YAsixCount / 2) ;Y++)
@@ -99,16 +99,20 @@ void UWindDebugArrowsComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 						FVector WindVelocity = ExportData.Color(DataIndex);
 
-						UE_LOG(LogTemp,Log,TEXT("X:%d Y:%d Z:%d LayerIndex.X:%d LayerIndex.Y:%d DataIndex:%d WindVelocity:%f,%f,%f "),X,Y,Z,LayerIndexX,LayerIndexY,DataIndex,WindVelocity.X,WindVelocity.Y,WindVelocity.Z);
+						// UE_LOG(LogTemp,Log,TEXT("X:%d Y:%d Z:%d LayerIndex.X:%d LayerIndex.Y:%d DataIndex:%d WindVelocity:%f,%f,%f "),X,Y,Z,LayerIndexX,LayerIndexY,DataIndex,WindVelocity.X,WindVelocity.Y,WindVelocity.Z);
 
-						FVector PosStart =  DebugWorldPos + FVector((X - XAsixCount * 0.5f) * 100,(Y - YAsixCount * 0.5f) * 100,(Z - ZAsixCount * 0.5f) * 100);
+						FVector PosStart =  DebugWorldPos - FVector((X - XAsixCount * 0.5f + 1) * 100,(Y - YAsixCount * 0.5f + 1) * 100,(Z - ZAsixCount * 0.5f + 1) * 100);
 
 						FVector VectorNormalize = WindVelocity.GetSafeNormal();
 						FVector PosEnd = PosStart + (VectorNormalize + WindVelocity) * VolecityDisplayRate;
-						
-						
-						UKismetSystemLibrary::DrawDebugLine(GetWorld(),PosStart,PosEnd,ArrowColor);
-						UKismetSystemLibrary::DrawDebugArrow(GetWorld(),PosStart,PosEnd,10,ArrowColor);
+
+						float LenSquared = WindVelocity.SizeSquared();
+						if(LenSquared > 1)
+						{
+							FLinearColor ArrowColorTemp(LenSquared * 0.001f,0,0,1);
+							UKismetSystemLibrary::DrawDebugLine(GetWorld(),PosStart,PosEnd,ArrowColorTemp);
+							UKismetSystemLibrary::DrawDebugArrow(GetWorld(),PosStart,PosEnd,10,ArrowColorTemp);
+						}
 					}
 				}
 			}

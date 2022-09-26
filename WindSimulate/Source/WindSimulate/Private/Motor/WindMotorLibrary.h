@@ -23,7 +23,7 @@ private:
 	static void ApplyWindMotors_RenderThread(
 					FRHICommandListImmediate& RHICmdList,
 					ERHIFeatureLevel::Type FeatureLevel,
-					FVector PlayerWorldPos,
+					FVector WindCenterWorldPos,
 					float MaxVelocity,
 					FVector MetersPerTexel,
 					const TArray<FWindMotorBaseParamBase*>& AllWindMotors,
@@ -32,7 +32,7 @@ private:
 	static void ApplyDirectionWindMotors_RenderThread(
 				FRHICommandListImmediate& RHICmdList,
 				ERHIFeatureLevel::Type FeatureLevel,
-				FVector PlayerWorldPos,
+				FVector WindCenterWorldPos,
 				float MaxVelocity,
 				FVector MetersPerTexel,
 				const TArray<class FDirectionalMotorParam*>& AllWindMotors,
@@ -41,7 +41,7 @@ private:
 	static void ApplySphereWindMotors_RenderThread(
 			FRHICommandListImmediate& RHICmdList,
 			ERHIFeatureLevel::Type FeatureLevel,
-			FVector PlayerWorldPos,
+			FVector WindCenterWorldPos,
 			float MaxVelocity,
 			FVector MetersPerTexel,
 			const TArray<class FSphereMotorParam*>& AllWindMotors,
@@ -50,7 +50,7 @@ private:
 	static void ApplyVortexWindMotors_RenderThread(
 			FRHICommandListImmediate& RHICmdList,
 			ERHIFeatureLevel::Type FeatureLevel,
-			FVector PlayerWorldPos,
+			FVector WindCenterWorldPos,
 			float MaxVelocity,
 			FVector MetersPerTexel,
 			const TArray<class FVortexMotorParam*>& AllWindMotors,

@@ -19,10 +19,10 @@ Texture3D<float> InZAxisTexture;  //texture for special dimension (x or y or z)
 //     uint NumMotors;
 //     float MaxVelocity;
 //     float3 MetersPerTexel;
-//     float3 InPlayerWorldSpacePos;
+//     float3 InWindCenterWorldPos;
 //     float MotorRadius[MotorDataMaxCount];
 //     float3 MotorWorldSpacePos[MotorDataMaxCount];
-//     float3 MotorWindVelocity[MotorDataMaxCount];
+//     float MotorWindForce[MotorDataMaxCount];
 // }
 // FSphereMotorUniformData SphereMotorData;
 
@@ -50,10 +50,10 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
     float SizeX,SizeY,SizeZ;
     OutXAxisTexture.GetDimensions(SizeX,SizeY,SizeZ);
     
-    uint3 GridPlayerPos = uint3(SizeX * 0.5f,SizeZ * 0.5f,SizeY * 0.5f);
+    uint3 GridWindCenterPos = uint3(SizeX * 0.5f,SizeZ * 0.5f,SizeY * 0.5f);
 
-    float3 PlayerWorldPos = SphereMotorData.InPlayerWorldSpacePos;
-    float MetersPerTexel = SphereMotorData.MetersPerTexel;
+    float3 WindCenterWorldPos = SphereMotorData.InWindCenterWorldPos;
+    float3 MetersPerTexel = SphereMotorData.MetersPerTexel;
     
     for(int y = 0; y < WINDTEX3D_ZLAYER_COUNT;++y)
     {
@@ -63,13 +63,16 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
         for(int i = 0;i < SphereMotorData.NumMotors ;++i)
         {
             float3 MotorPos = SphereMotorData.MotorWorldSpacePos[i];
-            float3 WindVelocity = SphereMotorData.MotorWindVelocity[i];
+            float MotorWindForce = SphereMotorData.MotorWindForce[i];
             float Radius = SphereMotorData.MotorRadius[i];
             
-            float3 GridMotorPos = (MotorPos - PlayerWorldPos) * PosToMeter * MetersPerTexel  + GridPlayerPos;
-            float3 deltaPos = GridPos - GridMotorPos;
+            // float3 GridMotorPos = (MotorPos - PlayerWorldPos) * PosToMeter * MetersPerTexel  + GridPlayerPos;
+            // float3 deltaGridPos = GridPos - GridMotorPos;
+
+            float3 GridWorldPos = (GridPos - GridWindCenterPos) / MetersPerTexel / PosToMeter + WindCenterWorldPos;
+            float3 normalizeDelta = normalize(GridWorldPos - MotorPos);
             
-            WindVelocityAdditive = WindVelocityAdditive + WindVelocity * ceil(min(1,max(0,Radius - length( deltaPos))));
+            WindVelocityAdditive = WindVelocityAdditive + MotorWindForce * ceil(min(1,max(0,Radius - length( GridWorldPos - MotorPos)))) * normalizeDelta;
         }
 
         ModifyVelocityInTexture(GridPos,WindVelocityAdditive);

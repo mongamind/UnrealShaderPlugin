@@ -28,7 +28,7 @@ void FDirectionalMotorShader::ModifyCompilationEnvironment(const FGlobalShaderPe
 
 void FDirectionalMotorShader::SetParameters(
 	FRHICommandListImmediate& RHICmdList,
-	FVector PlayerWorldPos,
+	FVector WindCenterWorldPos,
 	float MaxVelocity,
 	FVector MetersPerTexel,
 	const TArray<FDirectionalMotorParam*>& AllWindMotors,
@@ -69,11 +69,11 @@ void FDirectionalMotorShader::SetParameters(
 		UniformData.NumMotors = AllWindMotors.Num();
 		UniformData.MaxVelocity = MaxVelocity;
 		UniformData.MetersPerTexel = MetersPerTexel;
-		UniformData.InPlayerWorldSpacePos = PlayerWorldPos;
+		UniformData.InWindCenterWorldPos = WindCenterWorldPos;
 		SetUniformBufferParameterImmediate(RHICmdList,ComputeShaderRHI,GetUniformBufferParameter<FDirectionalMotorUniformData>(), UniformData);
 		
 		// SetShaderValue(RHICmdList,ComputeShaderRHI,NumMotors,AllWindMotors.Num());
-		// SetShaderValue(RHICmdList,ComputeShaderRHI,InPlayerWorldSpacePos,PlayerWorldPos);
+		// SetShaderValue(RHICmdList,ComputeShaderRHI,InWindCenterWorldPos,PlayerWorldPos);
 		// SetShaderValueArray(RHICmdList,ComputeShaderRHI,MotorWorldSpacePos,MotorPosArray.GetData(),AllWindMotors.Num());
 		// SetShaderValueArray(RHICmdList,ComputeShaderRHI,MotorWindVelocity,MotorWindVelocityArray.GetData(),AllWindMotors.Num());
 		// SetShaderValueArray(RHICmdList,ComputeShaderRHI,MotorRadius,MotorRadiusArray.GetData(),AllWindMotors.Num());

@@ -20,7 +20,7 @@ Texture3D<float> InZAxisTexture;  //texture for special dimension (x or y or z)
 //     uint NumMotors;
 //     float MaxVelocity;
 //     float3 MetersPerTexel;
-//     float3 InPlayerWorldSpacePos;
+//     float3 InWindCenterWorldPos;
 //     float MotorRadius[MotorDataMaxCount];
 //     float3 MotorWorldSpacePos[MotorDataMaxCount];
 //     float3 MotorWindVelocity[MotorDataMaxCount];
@@ -51,9 +51,9 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
     float SizeX,SizeY,SizeZ;
     OutXAxisTexture.GetDimensions(SizeX,SizeY,SizeZ);
     
-    uint3 GridPlayerPos = uint3(SizeX * 0.5f,SizeZ * 0.5f,SizeY * 0.5f);
-    float3 PlayerWorldPos = VortexMotorData.InPlayerWorldSpacePos;
-    float MetersPerTexel = VortexMotorData.MetersPerTexel;
+    uint3 GridWindCenterPos = uint3(SizeX * 0.5f,SizeZ * 0.5f,SizeY * 0.5f);
+    float3 WindCenterWorldPos = VortexMotorData.InWindCenterWorldPos;
+    float3 MetersPerTexel = VortexMotorData.MetersPerTexel;
     
     for(int y = 0; y < WINDTEX3D_ZLAYER_COUNT;++y)
     {
@@ -66,7 +66,7 @@ void MainCS(uint3 ThreadId : SV_DispatchThreadID)
             float3 WindVelocity = VortexMotorData.MotorWindVelocity[i];
             float Radius = VortexMotorData.MotorRadius[i];
             
-            float3 GridMotorPos = (MotorPos - PlayerWorldPos) * PosToMeter * MetersPerTexel  + GridPlayerPos;
+            float3 GridMotorPos = (MotorPos - WindCenterWorldPos) * PosToMeter * MetersPerTexel  + GridWindCenterPos;
             float3 deltaPos = GridPos - GridMotorPos;
             
             WindVelocityAdditive = WindVelocityAdditive + WindVelocity * ceil(min(1,max(0,Radius - length( deltaPos))));
